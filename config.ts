@@ -69,11 +69,11 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 	const apiKey =
 		typeof cfg.apiKey === "string" && cfg.apiKey.length > 0
 			? resolveEnvVars(cfg.apiKey)
-			: process.env.SUPERMEMORY_API_KEY
+			: process.env.SUPERMEMORY_CLAWDBOT_API_KEY
 
 	if (!apiKey) {
 		throw new Error(
-			"supermemory: apiKey is required (set in plugin config or SUPERMEMORY_API_KEY env var)",
+			"supermemory: apiKey is required (set in plugin config or SUPERMEMORY_CLAWDBOT_API_KEY env var)",
 		)
 	}
 
