@@ -17,7 +17,7 @@ The only required value is your Supermemory API key. Get one at [console.superme
 Set it as an environment variable:
 
 ```bash
-export SUPERMEMORY_API_KEY="sm_..."
+export SUPERMEMORY_CLAWDBOT_API_KEY="sm_..."
 ```
 
 Or configure it directly in `clawdbot.json`:
@@ -29,7 +29,7 @@ Or configure it directly in `clawdbot.json`:
       "clawdbot-supermemory": {
         "enabled": true,
         "config": {
-          "apiKey": "${SUPERMEMORY_API_KEY}"
+          "apiKey": "${SUPERMEMORY_CLAWDBOT_API_KEY}"
         }
       }
     }

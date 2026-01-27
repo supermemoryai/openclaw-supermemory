@@ -6,7 +6,7 @@
 			"label": "Supermemory API Key",
 			"sensitive": true,
 			"placeholder": "sm_...",
-			"help": "Your API key from console.supermemory.ai (or use ${SUPERMEMORY_API_KEY})"
+			"help": "Your API key from console.supermemory.ai (or use ${SUPERMEMORY_CLAWDBOT_API_KEY})"
 		},
 		"containerTag": {
 			"label": "Container Tag",
