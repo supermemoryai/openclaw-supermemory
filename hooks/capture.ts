@@ -64,9 +64,16 @@ export function buildCaptureHandler(
 
 		const captured =
 			cfg.captureMode === "all"
-				? texts.filter(
-						(t) => t.length >= 10 && !t.includes("<supermemory-context>"),
-					)
+				? texts
+						.map((t) =>
+							t
+								.replace(
+									/<supermemory-context>[\s\S]*?<\/supermemory-context>\s*/g,
+									"",
+								)
+								.trim(),
+						)
+						.filter((t) => t.length >= 10)
 				: texts
 
 		if (captured.length === 0) return
