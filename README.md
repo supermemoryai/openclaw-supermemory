@@ -5,7 +5,7 @@ Long-term memory for Clawdbot. Automatically remembers conversations, recalls re
 ## Install
 
 ```bash
-clawdbot plugins install /path/to/clawdbot-supermemory
+clawdbot plugins install @supermemoryai/clawdbot-supermemory
 ```
 
 Restart Clawdbot after installing.
