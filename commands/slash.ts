@@ -1,11 +1,11 @@
-import type { ClawdbotPluginApi } from "clawdbot/plugin-sdk"
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
 import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 import { buildDocumentId, detectCategory } from "../memory.ts"
 
 export function registerCommands(
-	api: ClawdbotPluginApi,
+	api: OpenClawPluginApi,
 	client: SupermemoryClient,
 	_cfg: SupermemoryConfig,
 	getSessionKey: () => string | undefined,
@@ -28,7 +28,7 @@ export function registerCommands(
 				const sk = getSessionKey()
 				await client.addMemory(
 					text,
-					{ type: category, source: "clawdbot_command" },
+					{ type: category, source: "openclaw_command" },
 					sk ? buildDocumentId(sk) : undefined,
 				)
 

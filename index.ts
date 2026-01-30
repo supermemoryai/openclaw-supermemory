@@ -1,4 +1,4 @@
-import type { ClawdbotPluginApi } from "clawdbot/plugin-sdk"
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
 import { SupermemoryClient } from "./client.ts"
 import { registerCli } from "./commands/cli.ts"
 import { registerCommands } from "./commands/slash.ts"
@@ -12,13 +12,13 @@ import { registerSearchTool } from "./tools/search.ts"
 import { registerStoreTool } from "./tools/store.ts"
 
 export default {
-	id: "clawdbot-supermemory",
+	id: "openclaw-supermemory",
 	name: "Supermemory",
-	description: "Clawdbot powered by Supermemory plugin",
+	description: "OpenClaw powered by Supermemory plugin",
 	kind: "memory" as const,
 	configSchema: supermemoryConfigSchema,
 
-	register(api: ClawdbotPluginApi) {
+	register(api: OpenClawPluginApi) {
 		const cfg = parseConfig(api.pluginConfig)
 
 		initLogger(api.logger, cfg.debug)
@@ -52,7 +52,7 @@ export default {
 		registerCli(api, client, cfg)
 
 		api.registerService({
-			id: "clawdbot-supermemory",
+			id: "openclaw-supermemory",
 			start: () => {
 				api.logger.info("supermemory: connected")
 			},

@@ -1,11 +1,11 @@
 import { Type } from "@sinclair/typebox"
-import type { ClawdbotPluginApi } from "clawdbot/plugin-sdk"
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
 import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 
 export function registerForgetTool(
-	api: ClawdbotPluginApi,
+	api: OpenClawPluginApi,
 	client: SupermemoryClient,
 	_cfg: SupermemoryConfig,
 ): void {

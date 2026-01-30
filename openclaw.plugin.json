@@ -1,17 +1,17 @@
 {
-	"id": "clawdbot-supermemory",
+	"id": "openclaw-supermemory",
 	"kind": "memory",
 	"uiHints": {
 		"apiKey": {
 			"label": "Supermemory API Key",
 			"sensitive": true,
 			"placeholder": "sm_...",
-			"help": "Your API key from console.supermemory.ai (or use ${SUPERMEMORY_CLAWDBOT_API_KEY})"
+			"help": "Your API key from console.supermemory.ai (or use ${SUPERMEMORY_OPENCLAW_API_KEY})"
 		},
 		"containerTag": {
 			"label": "Container Tag",
-			"placeholder": "clawdbot_myhostname",
-			"help": "Memory namespace. Default: clawdbot_{hostname}. All channels share this.",
+			"placeholder": "openclaw_myhostname",
+			"help": "Memory namespace. Default: openclaw_{hostname}. All channels share this.",
 			"advanced": true
 		},
 		"autoRecall": {

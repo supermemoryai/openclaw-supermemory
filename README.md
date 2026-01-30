@@ -1,18 +1,18 @@
-# Supermemory Plugin for Clawdbot
+# Supermemory Plugin for OpenClaw (previously Clawdbot)
 
 <img width="1200" height="628" alt="Announcement-3 (2)" src="https://github.com/user-attachments/assets/caa5acaa-8246-4172-af3a-9cfed2a452c1" />
 
 
 
-Long-term memory for Clawdbot. Automatically remembers conversations, recalls relevant context, and builds a persistent user profile — all powered by [Supermemory](https://supermemory.ai) cloud. No local infrastructure required.
+Long-term memory for OpenClaw. Automatically remembers conversations, recalls relevant context, and builds a persistent user profile — all powered by [Supermemory](https://supermemory.ai) cloud. No local infrastructure required.
 
 ## Install
 
 ```bash
-clawdbot plugins install @supermemoryai/clawdbot-supermemory
+openclaw plugins install @supermemory/openclaw-supermemory
 ```
 
-Restart Clawdbot after installing.
+Restart OpenClaw after installing.
 
 ## Configuration
 
@@ -21,19 +21,19 @@ The only required value is your Supermemory API key. Get one at [console.superme
 Set it as an environment variable:
 
 ```bash
-export SUPERMEMORY_CLAWDBOT_API_KEY="sm_..."
+export SUPERMEMORY_OPENCLAW_API_KEY="sm_..."
 ```
 
-Or configure it directly in `clawdbot.json`:
+Or configure it directly in `openclaw.json`:
 
 ```json5
 {
   "plugins": {
     "entries": {
-      "clawdbot-supermemory": {
+      "openclaw-supermemory": {
         "enabled": true,
         "config": {
-          "apiKey": "${SUPERMEMORY_CLAWDBOT_API_KEY}"
+          "apiKey": "${SUPERMEMORY_OPENCLAW_API_KEY}"
         }
       }
     }
@@ -45,7 +45,7 @@ Or configure it directly in `clawdbot.json`:
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `containerTag` | `string` | `clawdbot_{hostname}` | Memory namespace. All channels share this tag. |
+| `containerTag` | `string` | `openclaw_{hostname}` | Memory namespace. All channels share this tag. |
 | `autoRecall` | `boolean` | `true` | Inject relevant memories before every AI turn. |
 | `autoCapture` | `boolean` | `true` | Automatically store conversation content after every turn. |
 | `maxRecallResults` | `number` | `10` | Max memories injected into context per turn. |
@@ -83,7 +83,7 @@ The AI can use these tools autonomously during conversations:
 ## CLI Commands
 
 ```bash
-clawdbot supermemory search <query>    # Search memories
-clawdbot supermemory profile           # View user profile
-clawdbot supermemory wipe              # Delete all memories (destructive, requires confirmation)
+openclaw supermemory search <query>    # Search memories
+openclaw supermemory profile           # View user profile
+openclaw supermemory wipe              # Delete all memories (destructive, requires confirmation)
 ```

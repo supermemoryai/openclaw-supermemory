@@ -53,7 +53,7 @@ function sanitizeTag(raw: string): string {
 }
 
 function defaultContainerTag(): string {
-	return sanitizeTag(`clawdbot_${hostname()}`)
+	return sanitizeTag(`openclaw_${hostname()}`)
 }
 
 export function parseConfig(raw: unknown): SupermemoryConfig {
@@ -69,11 +69,11 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 	const apiKey =
 		typeof cfg.apiKey === "string" && cfg.apiKey.length > 0
 			? resolveEnvVars(cfg.apiKey)
-			: process.env.SUPERMEMORY_CLAWDBOT_API_KEY
+			: process.env.SUPERMEMORY_OPENCLAW_API_KEY
 
 	if (!apiKey) {
 		throw new Error(
-			"supermemory: apiKey is required (set in plugin config or SUPERMEMORY_CLAWDBOT_API_KEY env var)",
+			"supermemory: apiKey is required (set in plugin config or SUPERMEMORY_OPENCLAW_API_KEY env var)",
 		)
 	}
 

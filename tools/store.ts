@@ -1,6 +1,6 @@
 import { Type } from "@sinclair/typebox"
-import type { ClawdbotPluginApi } from "clawdbot/plugin-sdk"
-import { stringEnum } from "clawdbot/plugin-sdk"
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
+import { stringEnum } from "openclaw/plugin-sdk"
 import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
@@ -11,7 +11,7 @@ import {
 } from "../memory.ts"
 
 export function registerStoreTool(
-	api: ClawdbotPluginApi,
+	api: OpenClawPluginApi,
 	client: SupermemoryClient,
 	_cfg: SupermemoryConfig,
 	getSessionKey: () => string | undefined,
@@ -37,7 +37,7 @@ export function registerStoreTool(
 
 				await client.addMemory(
 					params.text,
-					{ type: category, source: "clawdbot_tool" },
+					{ type: category, source: "openclaw_tool" },
 					customId,
 				)
 
