@@ -89,7 +89,7 @@ export function buildCaptureHandler(
 		try {
 			await client.addMemory(
 				content,
-				{ source: "clawdbot", timestamp: new Date().toISOString() },
+				{ source: "openclaw", timestamp: new Date().toISOString() },
 				customId,
 			)
 		} catch (err) {

@@ -1,8 +1,8 @@
 {
-	"name": "@supermemory/clawdbot-supermemory",
-	"version": "1.0.0",
+	"name": "@supermemory/openclaw-supermemory",
+	"version": "1.0.1",
 	"type": "module",
-	"description": "Clawdbot Supermemory memory plugin",
+	"description": "OpenClaw Supermemory memory plugin",
 	"license": "MIT",
 	"dependencies": {
 		"supermemory": "^4.0.0",
@@ -15,9 +15,9 @@
 		"build:lib": "esbuild lib/validate.ts --bundle --minify --format=esm --platform=node --target=es2022 --external:node:crypto --outfile=lib/validate.js"
 	},
 	"peerDependencies": {
-		"clawdbot": ">=2026.1.24"
+		"openclaw": ">=2026.1.29"
 	},
-	"clawdbot": {
+	"openclaw": {
 		"extensions": [
 			"./index.ts"
 		]

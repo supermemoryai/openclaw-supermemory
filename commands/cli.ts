@@ -1,15 +1,15 @@
-import type { ClawdbotPluginApi } from "clawdbot/plugin-sdk"
+import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
 import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 
 export function registerCli(
-	api: ClawdbotPluginApi,
+	api: OpenClawPluginApi,
 	client: SupermemoryClient,
 	_cfg: SupermemoryConfig,
 ): void {
 	api.registerCli(
-		// biome-ignore lint/suspicious/noExplicitAny: clawdbot SDK does not ship types
+		// biome-ignore lint/suspicious/noExplicitAny: openclaw SDK does not ship types
 		({ program }: { program: any }) => {
 			const cmd = program
 				.command("supermemory")
