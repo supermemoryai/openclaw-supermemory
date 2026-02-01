@@ -131,10 +131,17 @@ export class SupermemoryClient {
 		return result
 	}
 
-	async deleteMemory(id: string): Promise<void> {
-		log.debugRequest("memories.delete", { id })
-		await this.client.memories.delete(id)
-		log.debugResponse("memories.delete", { success: true })
+	async deleteMemory(id: string): Promise<{ id: string; forgotten: boolean }> {
+		log.debugRequest("memories.delete", {
+			id,
+			containerTag: this.containerTag,
+		})
+		const result = await this.client.memories.forget({
+			containerTag: this.containerTag,
+			id,
+		})
+		log.debugResponse("memories.delete", result)
+		return result
 	}
 
 	async forgetByQuery(
