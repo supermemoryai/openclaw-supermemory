@@ -31,7 +31,9 @@ export function registerStoreTool(
 			) {
 				const category = params.category ?? detectCategory(params.text)
 				const sk = getSessionKey()
-				const customId = sk ? buildDocumentId(sk) : undefined
+				// Pass content to buildDocumentId to generate unique ID per fact
+				// This enables individual fact deletion via supermemory_forget
+				const customId = sk ? buildDocumentId(sk, params.text) : undefined
 
 				log.debug(`store tool: category="${category}" customId="${customId}"`)
 
