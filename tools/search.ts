@@ -6,7 +6,7 @@ import { log } from "../logger.ts"
 
 export function registerSearchTool(
 	api: OpenClawPluginApi,
-	client: SupermemoryClient,
+	getClient: () => SupermemoryClient,
 	_cfg: SupermemoryConfig,
 ): void {
 	api.registerTool(
@@ -28,7 +28,7 @@ export function registerSearchTool(
 				const limit = params.limit ?? 5
 				log.debug(`search tool: query="${params.query}" limit=${limit}`)
 
-				const results = await client.search(params.query, limit)
+				const results = await getClient().search(params.query, limit)
 
 				if (results.length === 0) {
 					return {

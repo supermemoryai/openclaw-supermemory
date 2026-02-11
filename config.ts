@@ -11,6 +11,8 @@ export type SupermemoryConfig = {
 	profileFrequency: number
 	captureMode: CaptureMode
 	debug: boolean
+	/** When true, look for per-agent API keys in auth-profiles.json. */
+	perAgentKeys: boolean
 }
 
 const ALLOWED_KEYS = [
@@ -22,6 +24,7 @@ const ALLOWED_KEYS = [
 	"profileFrequency",
 	"captureMode",
 	"debug",
+	"perAgentKeys",
 ]
 
 function assertAllowedKeys(
@@ -91,6 +94,7 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 				? ("everything" as const)
 				: ("all" as const),
 		debug: (cfg.debug as boolean) ?? false,
+		perAgentKeys: (cfg.perAgentKeys as boolean) ?? false,
 	}
 }
 
