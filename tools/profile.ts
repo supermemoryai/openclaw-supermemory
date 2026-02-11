@@ -6,7 +6,7 @@ import { log } from "../logger.ts"
 
 export function registerProfileTool(
 	api: OpenClawPluginApi,
-	client: SupermemoryClient,
+	getClient: () => SupermemoryClient,
 	_cfg: SupermemoryConfig,
 ): void {
 	api.registerTool(
@@ -25,7 +25,7 @@ export function registerProfileTool(
 			async execute(_toolCallId: string, params: { query?: string }) {
 				log.debug(`profile tool: query="${params.query ?? "(none)"}"`)
 
-				const profile = await client.getProfile(params.query)
+				const profile = await getClient().getProfile(params.query)
 
 				if (profile.static.length === 0 && profile.dynamic.length === 0) {
 					return {

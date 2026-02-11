@@ -12,7 +12,7 @@ import {
 
 export function registerStoreTool(
 	api: OpenClawPluginApi,
-	client: SupermemoryClient,
+	getClient: () => SupermemoryClient,
 	_cfg: SupermemoryConfig,
 	getSessionKey: () => string | undefined,
 ): void {
@@ -35,7 +35,7 @@ export function registerStoreTool(
 
 				log.debug(`store tool: category="${category}" customId="${customId}"`)
 
-				await client.addMemory(
+				await getClient().addMemory(
 					params.text,
 					{ type: category, source: "openclaw_tool" },
 					customId,

@@ -6,7 +6,7 @@ import { log } from "../logger.ts"
 
 export function registerForgetTool(
 	api: OpenClawPluginApi,
-	client: SupermemoryClient,
+	getClient: () => SupermemoryClient,
 	_cfg: SupermemoryConfig,
 ): void {
 	api.registerTool(
@@ -29,7 +29,7 @@ export function registerForgetTool(
 			) {
 				if (params.memoryId) {
 					log.debug(`forget tool: direct delete id="${params.memoryId}"`)
-					await client.deleteMemory(params.memoryId)
+					await getClient().deleteMemory(params.memoryId)
 					return {
 						content: [{ type: "text" as const, text: "Memory forgotten." }],
 					}
@@ -37,7 +37,7 @@ export function registerForgetTool(
 
 				if (params.query) {
 					log.debug(`forget tool: search-then-delete query="${params.query}"`)
-					const result = await client.forgetByQuery(params.query)
+					const result = await getClient().forgetByQuery(params.query)
 					return {
 						content: [{ type: "text" as const, text: result.message }],
 					}
