@@ -1,6 +1,7 @@
 # OpenClaw Supermemory Plugin
 
-<img width="1200" height="628" alt="Announcement-3 (2)" src="https://github.com/user-attachments/assets/caa5acaa-8246-4172-af3a-9cfed2a452c1" />
+<img width="2048" height="512" alt="Untitled_Artwork 3" src="https://github.com/user-attachments/assets/e68fe07d-bc1f-49a1-a40c-3560f1a079b2" />
+
 
 Long-term memory for OpenClaw. Automatically remembers conversations, recalls relevant context, and builds a persistent user profile — all powered by [Supermemory](https://supermemory.ai) cloud. No local infrastructure required.
 
