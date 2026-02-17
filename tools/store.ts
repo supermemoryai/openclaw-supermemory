@@ -24,21 +24,30 @@ export function registerStoreTool(
 			parameters: Type.Object({
 				text: Type.String({ description: "Information to remember" }),
 				category: Type.Optional(stringEnum(MEMORY_CATEGORIES)),
+				containerTag: Type.Optional(
+					Type.String({
+						description:
+							"Optional container tag to store the memory in a specific container",
+					}),
+				),
 			}),
 			async execute(
 				_toolCallId: string,
-				params: { text: string; category?: string },
+				params: { text: string; category?: string; containerTag?: string },
 			) {
 				const category = params.category ?? detectCategory(params.text)
 				const sk = getSessionKey()
 				const customId = sk ? buildDocumentId(sk) : undefined
 
-				log.debug(`store tool: category="${category}" customId="${customId}"`)
+				log.debug(
+					`store tool: category="${category}" customId="${customId}" containerTag="${params.containerTag ?? "default"}"`,
+				)
 
 				await client.addMemory(
 					params.text,
 					{ type: category, source: "openclaw_tool" },
 					customId,
+					params.containerTag,
 				)
 
 				const preview =

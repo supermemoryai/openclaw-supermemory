@@ -71,6 +71,10 @@ export function buildCaptureHandler(
 									/<supermemory-context>[\s\S]*?<\/supermemory-context>\s*/g,
 									"",
 								)
+								.replace(
+									/<supermemory-containers>[\s\S]*?<\/supermemory-containers>\s*/g,
+									"",
+								)
 								.trim(),
 						)
 						.filter((t) => t.length >= 10)

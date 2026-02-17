@@ -61,18 +61,21 @@ export class SupermemoryClient {
 		content: string,
 		metadata?: Record<string, string | number | boolean>,
 		customId?: string,
+		containerTag?: string,
 	): Promise<{ id: string }> {
 		const cleaned = sanitizeContent(content)
+		const tag = containerTag ?? this.containerTag
 
 		log.debugRequest("add", {
 			contentLength: cleaned.length,
 			customId,
 			metadata,
+			containerTag: tag,
 		})
 
 		const result = await this.client.add({
 			content: cleaned,
-			containerTag: this.containerTag,
+			containerTag: tag,
 			...(metadata && { metadata }),
 			...(customId && { customId }),
 		})
@@ -81,16 +84,22 @@ export class SupermemoryClient {
 		return { id: result.id }
 	}
 
-	async search(query: string, limit = 5): Promise<SearchResult[]> {
+	async search(
+		query: string,
+		limit = 5,
+		containerTag?: string,
+	): Promise<SearchResult[]> {
+		const tag = containerTag ?? this.containerTag
+
 		log.debugRequest("search.memories", {
 			query,
 			limit,
-			containerTag: this.containerTag,
+			containerTag: tag,
 		})
 
 		const response = await this.client.search.memories({
 			q: query,
-			containerTag: this.containerTag,
+			containerTag: tag,
 			limit,
 		})
 
@@ -106,11 +115,16 @@ export class SupermemoryClient {
 		return results
 	}
 
-	async getProfile(query?: string): Promise<ProfileResult> {
-		log.debugRequest("profile", { containerTag: this.containerTag, query })
+	async getProfile(
+		query?: string,
+		containerTag?: string,
+	): Promise<ProfileResult> {
+		const tag = containerTag ?? this.containerTag
+
+		log.debugRequest("profile", { containerTag: tag, query })
 
 		const response = await this.client.profile({
-			containerTag: this.containerTag,
+			containerTag: tag,
 			...(query && { q: query }),
 		})
 
@@ -131,13 +145,18 @@ export class SupermemoryClient {
 		return result
 	}
 
-	async deleteMemory(id: string): Promise<{ id: string; forgotten: boolean }> {
+	async deleteMemory(
+		id: string,
+		containerTag?: string,
+	): Promise<{ id: string; forgotten: boolean }> {
+		const tag = containerTag ?? this.containerTag
+
 		log.debugRequest("memories.delete", {
 			id,
-			containerTag: this.containerTag,
+			containerTag: tag,
 		})
 		const result = await this.client.memories.forget({
-			containerTag: this.containerTag,
+			containerTag: tag,
 			id,
 		})
 		log.debugResponse("memories.delete", result)
@@ -146,16 +165,17 @@ export class SupermemoryClient {
 
 	async forgetByQuery(
 		query: string,
+		containerTag?: string,
 	): Promise<{ success: boolean; message: string }> {
-		log.debugRequest("forgetByQuery", { query })
+		log.debugRequest("forgetByQuery", { query, containerTag })
 
-		const results = await this.search(query, 5)
+		const results = await this.search(query, 5, containerTag)
 		if (results.length === 0) {
 			return { success: false, message: "No matching memory found to forget." }
 		}
 
 		const target = results[0]
-		await this.deleteMemory(target.id)
+		await this.deleteMemory(target.id, containerTag)
 
 		const preview = limitText(target.content || target.memory || "", 100)
 		return { success: true, message: `Forgot: "${preview}"` }

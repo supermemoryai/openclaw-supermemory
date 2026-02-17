@@ -3,6 +3,7 @@ dist/
 .arch/
 lib/*.ts
 !lib/*.d.ts
+temp/
 
 *.tsbuildinfo
 .DS_Store

@@ -4,6 +4,32 @@ import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 import { buildDocumentId, detectCategory } from "../memory.ts"
 
+export function registerStubCommands(api: OpenClawPluginApi): void {
+	api.registerCommand({
+		name: "remember",
+		description: "Save something to memory",
+		acceptsArgs: true,
+		requireAuth: true,
+		handler: async () => {
+			return {
+				text: "Supermemory not configured. Run 'openclaw supermemory setup' first.",
+			}
+		},
+	})
+
+	api.registerCommand({
+		name: "recall",
+		description: "Search your memories",
+		acceptsArgs: true,
+		requireAuth: true,
+		handler: async () => {
+			return {
+				text: "Supermemory not configured. Run 'openclaw supermemory setup' first.",
+			}
+		},
+	})
+}
+
 export function registerCommands(
 	api: OpenClawPluginApi,
 	client: SupermemoryClient,
@@ -55,7 +81,7 @@ export function registerCommands(
 			log.debug(`/recall command: "${query}"`)
 
 			try {
-				const results = await client.search(query, 5)
+				const results = await client.search(query, _cfg.maxRecallResults)
 
 				if (results.length === 0) {
 					return { text: `No memories found for: "${query}"` }

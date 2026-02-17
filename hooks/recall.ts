@@ -128,36 +128,87 @@ function countUserTurns(messages: unknown[]): number {
 	return count
 }
 
+function formatContainerMetadata(
+	cfg: SupermemoryConfig,
+	messageProvider?: string,
+): string | null {
+	if (!cfg.enableCustomContainerTags || cfg.customContainers.length === 0)
+		return null
+
+	const lines: string[] = []
+
+	lines.push(`Root container: \`${cfg.containerTag}\``)
+	lines.push("")
+	lines.push("Custom memory containers:")
+	for (const c of cfg.customContainers) {
+		lines.push(`- \`${c.tag}\`: ${c.description}`)
+	}
+
+	if (messageProvider) {
+		lines.push("")
+		lines.push(`Current channel: ${messageProvider}`)
+	}
+
+	if (cfg.customContainerInstructions) {
+		lines.push("")
+		lines.push(cfg.customContainerInstructions)
+	}
+
+	lines.push("")
+	lines.push(
+		"Use containerTag parameter to store in a specific container, otherwise stores to root.",
+	)
+
+	return lines.join("\n")
+}
+
 export function buildRecallHandler(
 	client: SupermemoryClient,
 	cfg: SupermemoryConfig,
 ) {
-	return async (event: Record<string, unknown>) => {
+	return async (
+		event: Record<string, unknown>,
+		ctx?: Record<string, unknown>,
+	) => {
 		const prompt = event.prompt as string | undefined
 		if (!prompt || prompt.length < 5) return
 
 		const messages = Array.isArray(event.messages) ? event.messages : []
 		const turn = countUserTurns(messages)
 		const includeProfile = turn <= 1 || turn % cfg.profileFrequency === 0
+		const messageProvider = ctx?.messageProvider as string | undefined
 
 		log.debug(`recalling for turn ${turn} (profile: ${includeProfile})`)
 
 		try {
 			const profile = await client.getProfile(prompt)
-			const context = formatContext(
+			const memoryContext = formatContext(
 				includeProfile ? profile.static : [],
 				includeProfile ? profile.dynamic : [],
 				profile.searchResults,
 				cfg.maxRecallResults,
 			)
 
-			if (!context) {
+			const containerContext = formatContainerMetadata(cfg, messageProvider)
+
+			const contextParts: string[] = []
+			if (memoryContext) contextParts.push(memoryContext)
+			if (containerContext) {
+				contextParts.push(
+					`<supermemory-containers>\n${containerContext}\n</supermemory-containers>`,
+				)
+			}
+
+			if (contextParts.length === 0) {
 				log.debug("no profile data to inject")
 				return
 			}
 
-			log.debug(`injecting context (${context.length} chars, turn ${turn})`)
-			return { prependContext: context }
+			const finalContext = contextParts.join("\n\n")
+			log.debug(
+				`injecting context (${finalContext.length} chars, turn ${turn})`,
+			)
+			return { prependContext: finalContext }
 		} catch (err) {
 			log.error("recall failed", err)
 			return
