@@ -1,7 +1,7 @@
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
 import { SupermemoryClient } from "./client.ts"
-import { registerCli } from "./commands/cli.ts"
-import { registerCommands } from "./commands/slash.ts"
+import { registerCli, registerCliSetup } from "./commands/cli.ts"
+import { registerCommands, registerStubCommands } from "./commands/slash.ts"
 import { parseConfig, supermemoryConfigSchema } from "./config.ts"
 import { buildCaptureHandler } from "./hooks/capture.ts"
 import { buildRecallHandler } from "./hooks/recall.ts"
@@ -23,9 +23,20 @@ export default {
 
 		initLogger(api.logger, cfg.debug)
 
+		registerCliSetup(api)
+
+		if (!cfg.apiKey) {
+			api.logger.info(
+				"supermemory: not configured - run 'openclaw supermemory setup'",
+			)
+			registerStubCommands(api)
+			return
+		}
+
 		const client = new SupermemoryClient(cfg.apiKey, cfg.containerTag)
 
 		let sessionKey: string | undefined
+		let messageProvider: string | undefined
 		const getSessionKey = () => sessionKey
 
 		registerSearchTool(api, client, cfg)
@@ -39,7 +50,9 @@ export default {
 				"before_agent_start",
 				(event: Record<string, unknown>, ctx: Record<string, unknown>) => {
 					if (ctx.sessionKey) sessionKey = ctx.sessionKey as string
-					return recallHandler(event)
+					if (ctx.messageProvider)
+						messageProvider = ctx.messageProvider as string
+					return recallHandler(event, ctx)
 				},
 			)
 		}

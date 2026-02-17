@@ -43,6 +43,21 @@
 			"label": "Debug Logging",
 			"help": "Enable verbose debug logs for API calls and responses",
 			"advanced": true
+		},
+		"enableCustomContainerTags": {
+			"label": "Enable Custom Container Tags",
+			"help": "Enable AI-driven routing to custom containers",
+			"advanced": true
+		},
+		"customContainers": {
+			"label": "Custom Containers",
+			"help": "Define custom containers with tags and descriptions for AI routing",
+			"advanced": true
+		},
+		"customContainerInstructions": {
+			"label": "Container Instructions",
+			"help": "Instructions for AI on how to route memories to custom containers",
+			"advanced": true
 		}
 	},
 	"configSchema": {
@@ -56,7 +71,20 @@
 			"maxRecallResults": { "type": "number", "minimum": 1, "maximum": 20 },
 			"profileFrequency": { "type": "number", "minimum": 1, "maximum": 500 },
 			"captureMode": { "type": "string", "enum": ["everything", "all"] },
-			"debug": { "type": "boolean" }
+			"debug": { "type": "boolean" },
+			"enableCustomContainerTags": { "type": "boolean" },
+			"customContainers": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"tag": { "type": "string" },
+						"description": { "type": "string" }
+					},
+					"required": ["tag", "description"]
+				}
+			},
+			"customContainerInstructions": { "type": "string" }
 		},
 		"required": []
 	}

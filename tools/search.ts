@@ -20,15 +20,27 @@ export function registerSearchTool(
 				limit: Type.Optional(
 					Type.Number({ description: "Max results (default: 5)" }),
 				),
+				containerTag: Type.Optional(
+					Type.String({
+						description:
+							"Optional container tag to search in a specific container",
+					}),
+				),
 			}),
 			async execute(
 				_toolCallId: string,
-				params: { query: string; limit?: number },
+				params: { query: string; limit?: number; containerTag?: string },
 			) {
 				const limit = params.limit ?? 5
-				log.debug(`search tool: query="${params.query}" limit=${limit}`)
+				log.debug(
+					`search tool: query="${params.query}" limit=${limit} containerTag="${params.containerTag ?? "default"}"`,
+				)
 
-				const results = await client.search(params.query, limit)
+				const results = await client.search(
+					params.query,
+					limit,
+					params.containerTag,
+				)
 
 				if (results.length === 0) {
 					return {

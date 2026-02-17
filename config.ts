@@ -2,8 +2,13 @@ import { hostname } from "node:os"
 
 export type CaptureMode = "everything" | "all"
 
+export type CustomContainer = {
+	tag: string
+	description: string
+}
+
 export type SupermemoryConfig = {
-	apiKey: string
+	apiKey: string | undefined
 	containerTag: string
 	autoRecall: boolean
 	autoCapture: boolean
@@ -11,6 +16,9 @@ export type SupermemoryConfig = {
 	profileFrequency: number
 	captureMode: CaptureMode
 	debug: boolean
+	enableCustomContainerTags: boolean
+	customContainers: CustomContainer[]
+	customContainerInstructions: string
 }
 
 const ALLOWED_KEYS = [
@@ -22,6 +30,9 @@ const ALLOWED_KEYS = [
 	"profileFrequency",
 	"captureMode",
 	"debug",
+	"enableCustomContainerTags",
+	"customContainers",
+	"customContainerInstructions",
 ]
 
 function assertAllowedKeys(
@@ -66,15 +77,31 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 		assertAllowedKeys(cfg, ALLOWED_KEYS, "supermemory config")
 	}
 
-	const apiKey =
-		typeof cfg.apiKey === "string" && cfg.apiKey.length > 0
-			? resolveEnvVars(cfg.apiKey)
-			: process.env.SUPERMEMORY_OPENCLAW_API_KEY
+	let apiKey: string | undefined
+	try {
+		apiKey =
+			typeof cfg.apiKey === "string" && cfg.apiKey.length > 0
+				? resolveEnvVars(cfg.apiKey)
+				: process.env.SUPERMEMORY_OPENCLAW_API_KEY
+	} catch {
+		apiKey = undefined
+	}
 
-	if (!apiKey) {
-		throw new Error(
-			"supermemory: apiKey is required (set in plugin config or SUPERMEMORY_OPENCLAW_API_KEY env var)",
-		)
+	const customContainers: CustomContainer[] = []
+	if (Array.isArray(cfg.customContainers)) {
+		for (const c of cfg.customContainers) {
+			if (
+				c &&
+				typeof c === "object" &&
+				typeof (c as Record<string, unknown>).tag === "string" &&
+				typeof (c as Record<string, unknown>).description === "string"
+			) {
+				customContainers.push({
+					tag: sanitizeTag((c as Record<string, unknown>).tag as string),
+					description: (c as Record<string, unknown>).description as string,
+				})
+			}
+		}
 	}
 
 	return {
@@ -91,9 +118,42 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 				? ("everything" as const)
 				: ("all" as const),
 		debug: (cfg.debug as boolean) ?? false,
+		enableCustomContainerTags: (cfg.enableCustomContainerTags as boolean) ?? false,
+		customContainers,
+		customContainerInstructions:
+			typeof cfg.customContainerInstructions === "string"
+				? cfg.customContainerInstructions
+				: "",
 	}
 }
 
 export const supermemoryConfigSchema = {
+	jsonSchema: {
+		type: "object",
+		additionalProperties: false,
+		properties: {
+			apiKey: { type: "string" },
+			containerTag: { type: "string" },
+			autoRecall: { type: "boolean" },
+			autoCapture: { type: "boolean" },
+			maxRecallResults: { type: "number" },
+			profileFrequency: { type: "number" },
+			captureMode: { type: "string", enum: ["all", "everything"] },
+			debug: { type: "boolean" },
+			enableCustomContainerTags: { type: "boolean" },
+			customContainers: {
+				type: "array",
+				items: {
+					type: "object",
+					properties: {
+						tag: { type: "string" },
+						description: { type: "string" },
+					},
+					required: ["tag", "description"],
+				},
+			},
+			customContainerInstructions: { type: "string" },
+		},
+	},
 	parse: parseConfig,
 }

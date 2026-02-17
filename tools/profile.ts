@@ -21,11 +21,25 @@ export function registerProfileTool(
 						description: "Optional query to focus the profile",
 					}),
 				),
+				containerTag: Type.Optional(
+					Type.String({
+						description:
+							"Optional container tag to get profile from a specific container",
+					}),
+				),
 			}),
-			async execute(_toolCallId: string, params: { query?: string }) {
-				log.debug(`profile tool: query="${params.query ?? "(none)"}"`)
+			async execute(
+				_toolCallId: string,
+				params: { query?: string; containerTag?: string },
+			) {
+				log.debug(
+					`profile tool: query="${params.query ?? "(none)"}" containerTag="${params.containerTag ?? "default"}"`,
+				)
 
-				const profile = await client.getProfile(params.query)
+				const profile = await client.getProfile(
+					params.query,
+					params.containerTag,
+				)
 
 				if (profile.static.length === 0 && profile.dynamic.length === 0) {
 					return {

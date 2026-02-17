@@ -22,22 +22,35 @@ export function registerForgetTool(
 				memoryId: Type.Optional(
 					Type.String({ description: "Direct memory ID to delete" }),
 				),
+				containerTag: Type.Optional(
+					Type.String({
+						description:
+							"Optional container tag to delete from a specific container",
+					}),
+				),
 			}),
 			async execute(
 				_toolCallId: string,
-				params: { query?: string; memoryId?: string },
+				params: { query?: string; memoryId?: string; containerTag?: string },
 			) {
 				if (params.memoryId) {
-					log.debug(`forget tool: direct delete id="${params.memoryId}"`)
-					await client.deleteMemory(params.memoryId)
+					log.debug(
+						`forget tool: direct delete id="${params.memoryId}" containerTag="${params.containerTag ?? "default"}"`,
+					)
+					await client.deleteMemory(params.memoryId, params.containerTag)
 					return {
 						content: [{ type: "text" as const, text: "Memory forgotten." }],
 					}
 				}
 
 				if (params.query) {
-					log.debug(`forget tool: search-then-delete query="${params.query}"`)
-					const result = await client.forgetByQuery(params.query)
+					log.debug(
+						`forget tool: search-then-delete query="${params.query}" containerTag="${params.containerTag ?? "default"}"`,
+					)
+					const result = await client.forgetByQuery(
+						params.query,
+						params.containerTag,
+					)
 					return {
 						content: [{ type: "text" as const, text: result.message }],
 					}
