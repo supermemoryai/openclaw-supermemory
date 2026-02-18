@@ -107,9 +107,9 @@ function formatContext(
 	}
 
 	const intro =
-		"The following is recalled context about the user. Reference it only when relevant to the conversation."
+		"The following is background context about the user from long-term memory. Use this context silently to inform your understanding — only reference it when the user's message is directly related to something in these memories."
 	const disclaimer =
-		"Use these memories naturally when relevant — including indirect connections — but don't force them into every response or make assumptions beyond what's stated."
+		"Do not proactively bring up memories. Only use them when the conversation naturally calls for it."
 
 	return `<supermemory-context>\n${intro}\n\n${sections.join("\n\n")}\n\n${disclaimer}\n</supermemory-context>`
 }

@@ -62,6 +62,7 @@ export class SupermemoryClient {
 		metadata?: Record<string, string | number | boolean>,
 		customId?: string,
 		containerTag?: string,
+		entityContext?: string,
 	): Promise<{ id: string }> {
 		const cleaned = sanitizeContent(content)
 		const tag = containerTag ?? this.containerTag
@@ -78,6 +79,7 @@ export class SupermemoryClient {
 			containerTag: tag,
 			...(metadata && { metadata }),
 			...(customId && { customId }),
+			...(entityContext && { entityContext }),
 		})
 
 		log.debugResponse("add", { id: result.id })
