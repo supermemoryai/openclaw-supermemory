@@ -16,6 +16,9 @@ export function detectCategory(text: string): MemoryCategory {
 	return "other"
 }
 
+export const ENTITY_CONTEXT =
+	"Messages are tagged with [role: user] and [role: assistant]. Only create memories from what the user actually said — their preferences, decisions, and important personal details. Agent (assistant) responses are just context, not facts to remember. Only remember things that will be useful later. Ignore noise like greetings or status updates."
+
 export function buildDocumentId(sessionKey: string): string {
 	const sanitized = sessionKey
 		.replace(/[^a-zA-Z0-9_]/g, "_")

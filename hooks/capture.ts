@@ -1,7 +1,7 @@
 import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
-import { buildDocumentId } from "../memory.ts"
+import { buildDocumentId, ENTITY_CONTEXT } from "../memory.ts"
 
 function getLastTurn(messages: unknown[]): unknown[] {
 	let lastUserIdx = -1
@@ -24,7 +24,18 @@ export function buildCaptureHandler(
 	cfg: SupermemoryConfig,
 	getSessionKey: () => string | undefined,
 ) {
-	return async (event: Record<string, unknown>) => {
+	return async (
+		event: Record<string, unknown>,
+		ctx: Record<string, unknown>,
+	) => {
+		log.info(
+			`agent_end fired: provider="${ctx.messageProvider}" success=${event.success}`,
+		)
+		const provider = ctx.messageProvider
+		if (provider === "exec-event" || provider === "cron-event") {
+			return
+		}
+
 		if (
 			!event.success ||
 			!Array.isArray(event.messages) ||
@@ -95,6 +106,8 @@ export function buildCaptureHandler(
 				content,
 				{ source: "openclaw", timestamp: new Date().toISOString() },
 				customId,
+				undefined,
+				ENTITY_CONTEXT,
 			)
 		} catch (err) {
 			log.error("capture failed", err)
