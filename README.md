@@ -2,10 +2,9 @@
 
 <img width="2048" height="512" alt="Untitled_Artwork 3" src="https://github.com/user-attachments/assets/e68fe07d-bc1f-49a1-a40c-3560f1a079b2" />
 
-
 Long-term memory for OpenClaw. Automatically remembers conversations, recalls relevant context, and builds a persistent user profile — all powered by [Supermemory](https://supermemory.ai) cloud. No local infrastructure required.
 
-> **Requires [Supermemory Pro or above](https://console.supermemory.ai/billing)** - Unlock the state of the art memory for your OpenClaw bot.
+> **Requires [Supermemory Pro or above](https://app.supermemory.ai/?view=integrations)** - Unlock the state of the art memory for your OpenClaw bot.
 
 ## Install
 
@@ -21,7 +20,7 @@ Restart OpenClaw after installing.
 openclaw supermemory setup
 ```
 
-Enter your API key from [console.supermemory.ai](https://console.supermemory.ai). That's it.
+Enter your API key from [app.supermemory.ai](https://app.supermemory.ai/?view=integrations). That's it.
 
 ### Advanced Setup
 

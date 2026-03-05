@@ -23,7 +23,7 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 					const configPath = path.join(configDir, "openclaw.json")
 
 					console.log("\n🧠 Supermemory Setup\n")
-					console.log("Get your API key from: https://console.supermemory.ai\n")
+					console.log("Get your API key from: https://app.supermemory.ai\n")
 
 					const rl = readline.createInterface({
 						input: process.stdin,
@@ -87,7 +87,7 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 
 					console.log("\n🧠 Supermemory Advanced Setup\n")
 					console.log("Press Enter to use default values shown in [brackets]\n")
-					console.log("Get your API key from: https://console.supermemory.ai\n")
+					console.log("Get your API key from: https://app.supermemory.ai\n")
 
 					const rl = readline.createInterface({
 						input: process.stdin,
