@@ -4,6 +4,17 @@ import { log } from "../logger.ts"
 import { buildDocumentId } from "../memory.ts"
 
 const SKIPPED_PROVIDERS = ["exec-event", "cron-event", "heartbeat"]
+const MEMORY_TOOL_PREFIX = "supermemory_"
+const MEMORY_COMMAND_PREFIXES = ["/remember", "/recall"]
+const MEMORY_TOOL_RESPONSE_PATTERNS = [
+	/^Stored:\s*"/i,
+	/^Forgot:\s*"/i,
+	/^Found \d+ memories:/i,
+	/^No relevant memories found\.?$/i,
+	/^No matching memory found to forget\.?$/i,
+	/^Memory forgotten\.?$/i,
+	/^Provide a query or memoryId to forget\.?$/i,
+]
 
 function getLastTurn(messages: unknown[]): unknown[] {
 	let lastUserIdx = -1
@@ -19,6 +30,89 @@ function getLastTurn(messages: unknown[]): unknown[] {
 		}
 	}
 	return lastUserIdx >= 0 ? messages.slice(lastUserIdx) : messages
+}
+
+function collectTextParts(content: unknown): string[] {
+	const parts: string[] = []
+
+	if (typeof content === "string") {
+		parts.push(content)
+		return parts
+	}
+
+	if (!Array.isArray(content)) return parts
+
+	for (const block of content) {
+		if (!block || typeof block !== "object") continue
+		const b = block as Record<string, unknown>
+		if (b.type === "text" && typeof b.text === "string") {
+			parts.push(b.text)
+		}
+	}
+
+	return parts
+}
+
+function messageReferencesSupermemoryTool(
+	msgObj: Record<string, unknown>,
+): boolean {
+	for (const key of ["name", "toolName"]) {
+		if (
+			typeof msgObj[key] === "string" &&
+			(msgObj[key] as string).startsWith(MEMORY_TOOL_PREFIX)
+		) {
+			return true
+		}
+	}
+
+	const content = msgObj.content
+	if (!Array.isArray(content)) return false
+
+	for (const block of content) {
+		if (!block || typeof block !== "object") continue
+		const b = block as Record<string, unknown>
+		if (typeof b.name === "string" && b.name.startsWith(MEMORY_TOOL_PREFIX)) {
+			return true
+		}
+		if (
+			typeof b.toolName === "string" &&
+			b.toolName.startsWith(MEMORY_TOOL_PREFIX)
+		) {
+			return true
+		}
+	}
+
+	return false
+}
+
+export function isSupermemoryManagementTurn(messages: unknown[]): boolean {
+	for (const msg of messages) {
+		if (!msg || typeof msg !== "object") continue
+		const msgObj = msg as Record<string, unknown>
+
+		if (messageReferencesSupermemoryTool(msgObj)) {
+			return true
+		}
+
+		for (const text of collectTextParts(msgObj.content)) {
+			const trimmed = text.trim()
+			const lower = trimmed.toLowerCase()
+			if (
+				MEMORY_COMMAND_PREFIXES.some(
+					(prefix) => lower === prefix || lower.startsWith(`${prefix} `),
+				)
+			) {
+				return true
+			}
+			if (
+				MEMORY_TOOL_RESPONSE_PATTERNS.some((pattern) => pattern.test(trimmed))
+			) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 export function buildCaptureHandler(
@@ -46,6 +140,10 @@ export function buildCaptureHandler(
 			return
 
 		const lastTurn = getLastTurn(event.messages)
+		if (isSupermemoryManagementTurn(lastTurn)) {
+			log.debug("capture: skipping supermemory management turn")
+			return
+		}
 
 		const texts: string[] = []
 		for (const msg of lastTurn) {
@@ -54,21 +152,7 @@ export function buildCaptureHandler(
 			const role = msgObj.role
 			if (role !== "user" && role !== "assistant") continue
 
-			const content = msgObj.content
-
-			const parts: string[] = []
-
-			if (typeof content === "string") {
-				parts.push(content)
-			} else if (Array.isArray(content)) {
-				for (const block of content) {
-					if (!block || typeof block !== "object") continue
-					const b = block as Record<string, unknown>
-					if (b.type === "text" && typeof b.text === "string") {
-						parts.push(b.text)
-					}
-				}
-			}
+			const parts = collectTextParts(msgObj.content)
 
 			if (parts.length > 0) {
 				texts.push(`[role: ${role}]\n${parts.join("\n")}\n[${role}:end]`)
