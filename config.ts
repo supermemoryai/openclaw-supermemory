@@ -18,6 +18,7 @@ export type SupermemoryConfig = {
 	captureMode: CaptureMode
 	entityContext: string
 	debug: boolean
+	showMemoryUsage: boolean
 	enableCustomContainerTags: boolean
 	customContainers: CustomContainer[]
 	customContainerInstructions: string
@@ -33,6 +34,7 @@ const ALLOWED_KEYS = [
 	"captureMode",
 	"entityContext",
 	"debug",
+	"showMemoryUsage",
 	"enableCustomContainerTags",
 	"customContainers",
 	"customContainerInstructions",
@@ -125,6 +127,7 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 				? cfg.entityContext.trim()
 				: DEFAULT_ENTITY_CONTEXT,
 		debug: (cfg.debug as boolean) ?? false,
+		showMemoryUsage: (cfg.showMemoryUsage as boolean) ?? true,
 		enableCustomContainerTags:
 			(cfg.enableCustomContainerTags as boolean) ?? false,
 		customContainers,
@@ -149,6 +152,7 @@ export const supermemoryConfigSchema = {
 			captureMode: { type: "string", enum: ["all", "everything"] },
 			entityContext: { type: "string" },
 			debug: { type: "boolean" },
+			showMemoryUsage: { type: "boolean" },
 			enableCustomContainerTags: { type: "boolean" },
 			customContainers: {
 				type: "array",
