@@ -30,6 +30,14 @@ export function buildCaptureHandler(
 		event: Record<string, unknown>,
 		ctx: Record<string, unknown>,
 	) => {
+		const sessionKey = ctx.sessionKey as string | undefined
+		if (
+			cfg.allowedAgents?.length &&
+			!cfg.allowedAgents.some((agentId) => sessionKey?.includes(agentId))
+		) {
+			return
+		}
+
 		log.info(
 			`agent_end fired: provider="${ctx.messageProvider}" success=${event.success}`,
 		)
