@@ -23,6 +23,7 @@ export type SupermemoryConfig = {
 	enableCustomContainerTags: boolean
 	customContainers: CustomContainer[]
 	customContainerInstructions: string
+	allowedAgents?: string[]
 }
 
 const ALLOWED_KEYS = [
@@ -40,6 +41,7 @@ const ALLOWED_KEYS = [
 	"enableCustomContainerTags",
 	"customContainers",
 	"customContainerInstructions",
+	"allowedAgents",
 ]
 
 function assertAllowedKeys(
@@ -142,6 +144,13 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 		}
 	}
 
+	const allowedAgents = Array.isArray(cfg.allowedAgents)
+		? cfg.allowedAgents.filter(
+				(agentId): agentId is string =>
+					typeof agentId === "string" && agentId.trim().length > 0,
+			)
+		: undefined
+
 	return {
 		apiKey,
 		baseUrl: resolveBaseUrl(cfg.baseUrl),
@@ -169,6 +178,7 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 			typeof cfg.customContainerInstructions === "string"
 				? cfg.customContainerInstructions
 				: "",
+		allowedAgents,
 	}
 }
 
@@ -201,6 +211,10 @@ export const supermemoryConfigSchema = {
 				},
 			},
 			customContainerInstructions: { type: "string" },
+			allowedAgents: {
+				type: "array",
+				items: { type: "string" },
+			},
 		},
 	},
 	parse: parseConfig,
