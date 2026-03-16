@@ -32,8 +32,9 @@ export function buildCaptureHandler(
 	) => {
 		const sessionKey = ctx.sessionKey as string | undefined
 		if (
+			sessionKey &&
 			cfg.allowedAgents?.length &&
-			!cfg.allowedAgents.some((agentId) => sessionKey?.includes(agentId))
+			!cfg.allowedAgents.some((agentId) => sessionKey.includes(agentId))
 		) {
 			return
 		}

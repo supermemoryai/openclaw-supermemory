@@ -32,6 +32,47 @@ describe("allowedAgents config", () => {
 		expect(addMemory).not.toHaveBeenCalled()
 	})
 
+	it("processes capture when sessionKey is undefined (no silent data loss)", async () => {
+		const addMemory = mock(async () => undefined)
+		const handler = buildCaptureHandler(
+			{ addMemory } as never,
+			parseConfig({ apiKey: "test-key", allowedAgents: ["navi"] }),
+			() => undefined,
+		)
+
+		await handler(
+			{
+				success: true,
+				messages: [{ role: "user", content: "hello" }],
+			},
+			{ messageProvider: "discord" },
+		)
+
+		expect(addMemory).toHaveBeenCalled()
+	})
+
+	it("processes recall when sessionKey is undefined (no silent data loss)", async () => {
+		const getProfile = mock(async () => ({
+			static: ["persistent fact"],
+			dynamic: [],
+			searchResults: [],
+		}))
+		const handler = buildRecallHandler(
+			{ getProfile } as never,
+			parseConfig({ apiKey: "test-key", allowedAgents: ["navi"] }),
+		)
+
+		const result = await handler(
+			{
+				prompt: "Tell me what you remember about me",
+				messages: [{ role: "user", content: "hello" }],
+			},
+			{ messageProvider: "discord" },
+		)
+
+		expect(getProfile).toHaveBeenCalled()
+	})
+
 	it("skips recall when sessionKey does not match allowedAgents", async () => {
 		const getProfile = mock(async () => ({
 			static: ["persistent fact"],
