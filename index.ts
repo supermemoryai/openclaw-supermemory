@@ -11,6 +11,9 @@ import { registerProfileTool } from "./tools/profile.ts"
 import { registerSearchTool } from "./tools/search.ts"
 import { registerStoreTool } from "./tools/store.ts"
 
+// Track initialization state to prevent re-registration
+let _initialized = false
+
 export default {
 	id: "openclaw-supermemory",
 	name: "Supermemory",
@@ -19,6 +22,12 @@ export default {
 	configSchema: supermemoryConfigSchema,
 
 	register(api: OpenClawPluginApi) {
+		// Guard against re-initialization
+		if (_initialized) {
+			return
+		}
+		_initialized = true
+
 		const cfg = parseConfig(api.pluginConfig)
 
 		initLogger(api.logger, cfg.debug)
