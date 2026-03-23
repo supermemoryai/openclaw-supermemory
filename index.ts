@@ -46,7 +46,7 @@ export default {
 		if (cfg.autoRecall) {
 			const recallHandler = buildRecallHandler(client, cfg)
 			api.on(
-				"before_agent_start",
+				"before_prompt_build",
 				(event: Record<string, unknown>, ctx: Record<string, unknown>) => {
 					if (ctx.sessionKey) sessionKey = ctx.sessionKey as string
 					return recallHandler(event, ctx)
