@@ -1,5 +1,6 @@
 import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
+import { isAgentAllowed } from "../config.ts"
 import { log } from "../logger.ts"
 import { buildDocumentId } from "../memory.ts"
 
@@ -30,6 +31,11 @@ export function buildCaptureHandler(
 		event: Record<string, unknown>,
 		ctx: Record<string, unknown>,
 	) => {
+		if (!isAgentAllowed(cfg, ctx)) {
+			log.debug(`capture skipped: agent not in allowedAgents list`)
+			return
+		}
+
 		log.info(
 			`agent_end fired: provider="${ctx.messageProvider}" success=${event.success}`,
 		)

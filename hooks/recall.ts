@@ -1,5 +1,6 @@
 import type { ProfileSearchResult, SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
+import { isAgentAllowed } from "../config.ts"
 import { log } from "../logger.ts"
 
 function formatRelativeTime(isoTimestamp: string): string {
@@ -170,6 +171,11 @@ export function buildRecallHandler(
 		event: Record<string, unknown>,
 		ctx?: Record<string, unknown>,
 	) => {
+		if (ctx && !isAgentAllowed(cfg, ctx)) {
+			log.debug(`recall skipped: agent not in allowedAgents list`)
+			return
+		}
+
 		const prompt = event.prompt as string | undefined
 		if (!prompt || prompt.length < 5) return
 
