@@ -18,7 +18,4 @@ declare module "openclaw/plugin-sdk" {
 		// biome-ignore lint/suspicious/noExplicitAny: openclaw SDK does not ship types
 		on(event: string, handler: (...args: any[]) => any): void
 	}
-
-	// biome-ignore lint/suspicious/noExplicitAny: openclaw SDK does not ship types
-	export function stringEnum(values: readonly string[]): any
 }

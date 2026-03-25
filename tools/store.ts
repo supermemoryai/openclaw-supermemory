@@ -1,6 +1,5 @@
 import { Type } from "@sinclair/typebox"
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
-import { stringEnum } from "openclaw/plugin-sdk/core"
 import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
@@ -23,7 +22,9 @@ export function registerStoreTool(
 			description: "Save important information to long-term memory.",
 			parameters: Type.Object({
 				text: Type.String({ description: "Information to remember" }),
-				category: Type.Optional(stringEnum(MEMORY_CATEGORIES)),
+				category: Type.Optional(
+					Type.Unsafe<string>({ type: "string", enum: [...MEMORY_CATEGORIES] }),
+				),
 				containerTag: Type.Optional(
 					Type.String({
 						description:
