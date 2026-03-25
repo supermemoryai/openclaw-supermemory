@@ -94,6 +94,7 @@ Or configure in `~/.openclaw/openclaw.json`:
 | `enableCustomContainerTags`   | `boolean` | `false`               | Enable custom container routing.                          |
 | `customContainers`            | `array`   | `[]`                  | Custom containers with `tag` and `description`.           |
 | `customContainerInstructions` | `string`  | `""`                  | Instructions for AI on container routing.                 |
+| `allowedAgents`               | `string[]`| omitted               | Restrict auto-capture and auto-recall to matching agent session keys. |
 
 ### Full Example
 
@@ -117,7 +118,8 @@ Or configure in `~/.openclaw/openclaw.json`:
             { "tag": "work", "description": "Work-related memories" },
             { "tag": "personal", "description": "Personal notes" }
           ],
-          "customContainerInstructions": "Store work tasks in 'work', personal stuff in 'personal'"
+          "customContainerInstructions": "Store work tasks in 'work', personal stuff in 'personal'",
+          "allowedAgents": ["navi", "heimerdinger"]
         }
       }
     }

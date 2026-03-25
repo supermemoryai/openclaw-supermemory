@@ -170,6 +170,15 @@ export function buildRecallHandler(
 		event: Record<string, unknown>,
 		ctx?: Record<string, unknown>,
 	) => {
+		const sessionKey = ctx?.sessionKey as string | undefined
+		if (
+			sessionKey &&
+			cfg.allowedAgents?.length &&
+			!cfg.allowedAgents.some((agentId) => sessionKey.includes(agentId))
+		) {
+			return
+		}
+
 		const prompt = event.prompt as string | undefined
 		if (!prompt || prompt.length < 5) return
 
