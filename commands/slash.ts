@@ -37,6 +37,31 @@ export function registerCommands(
 	getSessionKey: () => string | undefined,
 ): void {
 	api.registerCommand({
+		name: "memory-usage",
+		description: "Toggle memory usage display on/off",
+		acceptsArgs: true,
+		requireAuth: false,
+		handler: async (ctx: { args?: string }) => {
+			const arg = ctx.args?.trim().toLowerCase()
+
+			if (arg === "on" || arg === "true" || arg === "enable") {
+				cfg.showMemoryUsage = true
+				return { text: "Memory usage display enabled. The model will now show how many memories were used." }
+			}
+
+			if (arg === "off" || arg === "false" || arg === "disable") {
+				cfg.showMemoryUsage = false
+				return { text: "Memory usage display disabled. The model will no longer show memory counts." }
+			}
+
+			// No arg or unrecognized: toggle
+			cfg.showMemoryUsage = !cfg.showMemoryUsage
+			const state = cfg.showMemoryUsage ? "enabled" : "disabled"
+			return { text: `Memory usage display ${state}. Use /memory-usage on|off to set explicitly.` }
+		},
+	})
+
+	api.registerCommand({
 		name: "remember",
 		description: "Save something to memory",
 		acceptsArgs: true,

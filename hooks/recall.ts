@@ -69,6 +69,7 @@ function formatContext(
 	dynamicFacts: string[],
 	searchResults: ProfileSearchResult[],
 	maxResults: number,
+	showMemoryUsage = true,
 ): string | null {
 	const deduped = deduplicateMemories(staticFacts, dynamicFacts, searchResults)
 	const statics = deduped.static.slice(0, maxResults)
@@ -77,6 +78,8 @@ function formatContext(
 
 	if (statics.length === 0 && dynamics.length === 0 && search.length === 0)
 		return null
+
+	const totalMemories = statics.length + dynamics.length + search.length
 
 	const sections: string[] = []
 
@@ -112,7 +115,12 @@ function formatContext(
 	const disclaimer =
 		"Do not proactively bring up memories. Only use them when the conversation naturally calls for it."
 
-	return `<supermemory-context>\n${intro}\n\n${sections.join("\n\n")}\n\n${disclaimer}\n</supermemory-context>`
+	let memoryUsageInstruction = ""
+	if (showMemoryUsage) {
+		memoryUsageInstruction = `\n\nIMPORTANT: At the very beginning of your response, include a brief note indicating how many memories from Supermemory were used to inform your response. Format it as: "[Supermemory: ${totalMemories} memories loaded]" — this helps the user understand that OpenClaw is using their long-term memory. If none of the memories are relevant to the current message, say "[Supermemory: ${totalMemories} memories loaded, 0 used]".`
+	}
+
+	return `<supermemory-context>\n${intro}\n\n${sections.join("\n\n")}\n\n${disclaimer}${memoryUsageInstruction}\n</supermemory-context>`
 }
 
 function countUserTurns(messages: unknown[]): number {
@@ -192,6 +200,7 @@ export function buildRecallHandler(
 				includeProfile ? profile.dynamic : [],
 				profile.searchResults,
 				cfg.maxRecallResults,
+				cfg.showMemoryUsage,
 			)
 
 			const containerContext = formatContainerMetadata(cfg, messageProvider)

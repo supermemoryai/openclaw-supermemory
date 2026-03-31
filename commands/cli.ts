@@ -190,6 +190,26 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 						console.log("  Invalid value, using default: all")
 					}
 
+					console.log("\nMemory usage display:")
+					console.log(
+						"  true  - Show how many memories were used in each response (recommended)",
+					)
+					console.log(
+						"  false - Hide memory usage counts from responses",
+					)
+					const showMemoryUsageInput = await ask(
+						"Show memory usage (true/false) [true]: ",
+					)
+					let showMemoryUsage = true
+					if (showMemoryUsageInput.trim().toLowerCase() === "false") {
+						showMemoryUsage = false
+					} else if (
+						showMemoryUsageInput.trim() &&
+						showMemoryUsageInput.trim().toLowerCase() !== "true"
+					) {
+						console.log("  Invalid value, using default: true")
+					}
+
 					console.log("\nEntity context:")
 					console.log(
 						"  Instructions that guide what memories are extracted from conversations.",
@@ -275,6 +295,7 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 					if (profileFrequency !== 50)
 						pluginConfig.profileFrequency = profileFrequency
 					if (captureMode !== "all") pluginConfig.captureMode = captureMode
+					if (!showMemoryUsage) pluginConfig.showMemoryUsage = false
 					if (entityContextInput.trim())
 						pluginConfig.entityContext = entityContextInput.trim()
 					if (enableCustomContainerTags)
@@ -311,6 +332,7 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 					console.log(`  Max results:      ${maxRecallResults}`)
 					console.log(`  Profile freq:     ${profileFrequency}`)
 					console.log(`  Capture mode:     ${captureMode}`)
+					console.log(`  Memory usage:     ${showMemoryUsage}`)
 					const entityPreview = entityContextInput.trim()
 					if (entityPreview) {
 						const truncated =
@@ -403,6 +425,9 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 					)
 					console.log(
 						`  Capture mode:     ${pluginConfig.captureMode ?? "all"}`,
+					)
+					console.log(
+						`  Memory usage:     ${pluginConfig.showMemoryUsage ?? true}`,
 					)
 					const entityCtx = pluginConfig.entityContext as string | undefined
 					if (entityCtx) {
