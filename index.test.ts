@@ -1,11 +1,5 @@
 import { describe, expect, test } from "bun:test"
 
-/**
- * Tests for the memory capability registration fallback logic,
- * the hook migration from before_agent_start to before_prompt_build,
- * and the session_start hook for sessionKey capture.
- */
-
 function createMockApi(opts?: { hasRegisterMemoryCapability?: boolean }) {
 	const calls: Record<string, unknown[][]> = {}
 	const record = (name: string) => {
