@@ -1,6 +1,6 @@
 {
 	"name": "@supermemory/openclaw-supermemory",
-	"version": "2.0.23",
+	"version": "2.1.0",
 	"type": "module",
 	"description": "OpenClaw Supermemory memory plugin",
 	"license": "MIT",
@@ -15,7 +15,7 @@
 		"build:lib": "esbuild lib/validate.ts --bundle --minify --format=esm --platform=node --target=es2022 --external:node:crypto --outfile=lib/validate.js"
 	},
 	"peerDependencies": {
-		"openclaw": ">=2026.1.29"
+		"openclaw": ">=2026.2.17"
 	},
 	"openclaw": {
 		"extensions": [

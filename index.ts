@@ -49,12 +49,29 @@ export default {
 
 		const client = new SupermemoryClient(cfg.apiKey, cfg.containerTag)
 
-		api.registerMemoryRuntime?.(buildMemoryRuntime(client))
-		api.registerMemoryPromptSection?.(buildPromptSection)
-		api.registerMemoryFlushPlan?.(() => null)
+		const memoryRuntime = buildMemoryRuntime(client)
+		const noopFlushPlan = () => null
+		if (typeof api.registerMemoryCapability === "function") {
+			api.registerMemoryCapability({
+				runtime: memoryRuntime,
+				promptBuilder: buildPromptSection,
+				flushPlanResolver: noopFlushPlan,
+			})
+		} else {
+			api.registerMemoryRuntime?.(memoryRuntime)
+			api.registerMemoryPromptSection?.(buildPromptSection)
+			api.registerMemoryFlushPlan?.(noopFlushPlan)
+		}
 
 		let sessionKey: string | undefined
 		const getSessionKey = () => sessionKey
+
+		api.on(
+			"session_start",
+			(_event: Record<string, unknown>, ctx: Record<string, unknown>) => {
+				if (ctx.sessionKey) sessionKey = ctx.sessionKey as string
+			},
+		)
 
 		registerSearchTool(api, client, cfg)
 		registerStoreTool(api, client, cfg, getSessionKey)
@@ -62,14 +79,7 @@ export default {
 		registerProfileTool(api, client, cfg)
 
 		if (cfg.autoRecall) {
-			const recallHandler = buildRecallHandler(client, cfg)
-			api.on(
-				"before_agent_start",
-				(event: Record<string, unknown>, ctx: Record<string, unknown>) => {
-					if (ctx.sessionKey) sessionKey = ctx.sessionKey as string
-					return recallHandler(event, ctx)
-				},
-			)
+			api.on("before_prompt_build", buildRecallHandler(client, cfg))
 		}
 
 		if (cfg.autoCapture) {
