@@ -52,10 +52,6 @@ jobs:
         if: steps.version-check.outputs.changed == 'true'
         run: bun run lint
 
-      - name: Build
-        if: steps.version-check.outputs.changed == 'true'
-        run: bun run build:lib
-
       - name: Publish
         if: steps.version-check.outputs.changed == 'true'
         run: npm publish --access public
