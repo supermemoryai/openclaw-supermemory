@@ -26,7 +26,6 @@
 		"url": "https://github.com/supermemoryai/openclaw-supermemory.git"
 	},
 	"devDependencies": {
-		"esbuild": "^0.27.2",
 		"typescript": "^5.9.3"
 	}
 }
