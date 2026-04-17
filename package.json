@@ -11,8 +11,7 @@
 	"scripts": {
 		"check-types": "tsc --noEmit",
 		"lint": "bunx @biomejs/biome ci .",
-		"lint:fix": "bunx @biomejs/biome check --write .",
-		"build:lib": "esbuild lib/validate.ts --bundle --minify --format=esm --platform=node --target=es2022 --external:node:crypto --outfile=lib/validate.js"
+		"lint:fix": "bunx @biomejs/biome check --write ."
 	},
 	"peerDependencies": {
 		"openclaw": ">=2026.2.17"
