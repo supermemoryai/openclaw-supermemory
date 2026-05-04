@@ -41,7 +41,7 @@ export default {
 
 		if (!cfg.apiKey) {
 			api.logger.info(
-				"supermemory: not configured - run 'openclaw supermemory setup'",
+				"supermemory: not configured - run 'openclaw supermemory login'",
 			)
 			registerStubCommands(api)
 			return
