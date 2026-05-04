@@ -17,10 +17,10 @@ Restart OpenClaw after installing.
 ## Setup
 
 ```bash
-openclaw supermemory setup
+openclaw supermemory login
 ```
 
-Enter your API key from [app.supermemory.ai](https://app.supermemory.ai/?view=integrations). That's it.
+Opens your browser to authenticate with Supermemory. The API key is saved automatically.
 
 ### Advanced Setup
 
@@ -61,7 +61,7 @@ The AI uses these tools autonomously. With custom container tags enabled, all to
 ## CLI Commands
 
 ```bash
-openclaw supermemory setup              # Configure API key
+openclaw supermemory login              # Authenticate with Supermemory
 openclaw supermemory setup-advanced     # Configure all options
 openclaw supermemory status             # View current configuration
 openclaw supermemory search <query>     # Search memories

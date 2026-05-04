@@ -3,6 +3,7 @@ import * as os from "node:os"
 import * as path from "node:path"
 import * as readline from "node:readline"
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
+import { saveApiKey, startAuthFlow, validateApiKey } from "../auth.ts"
 import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
@@ -16,62 +17,54 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 				.description("Supermemory long-term memory commands")
 
 			cmd
-				.command("setup")
-				.description("Configure Supermemory API key")
+				.command("login")
+				.description("Connect Supermemory via browser login")
 				.action(async () => {
-					const configDir = path.join(os.homedir(), ".openclaw")
-					const configPath = path.join(configDir, "openclaw.json")
+					console.log("\n🧠 Supermemory Login\n")
+					console.log("Opening browser for authentication...")
 
-					console.log("\n🧠 Supermemory Setup\n")
-					console.log("Get your API key from: https://app.supermemory.ai\n")
+					const result = await startAuthFlow()
+
+					if (result.success) {
+						console.log("\n✓ Successfully authenticated with Supermemory!")
+						console.log(
+							"  Restart OpenClaw to apply changes: openclaw gateway --force\n",
+						)
+						return
+					}
+
+					// Browser auth failed — fall back to manual paste
+					console.log(`\nBrowser authentication failed (${result.error}).`)
+					console.log("You can paste your API key manually instead.")
+					console.log("Get your API key from: https://console.supermemory.ai\n")
 
 					const rl = readline.createInterface({
 						input: process.stdin,
 						output: process.stdout,
 					})
-
 					const apiKey = await new Promise<string>((resolve) => {
 						rl.question("Enter your Supermemory API key: ", resolve)
 					})
 					rl.close()
 
-					if (!apiKey.trim()) {
-						console.log("\nNo API key provided. Setup cancelled.")
-						return
+					if (!apiKey.trim()?.startsWith("sm_")) {
+						console.error("\n✗ Invalid or missing API key.\n")
+						process.exit(1)
 					}
 
-					if (!apiKey.startsWith("sm_")) {
-						console.log("\nWarning: API key should start with 'sm_'")
+					console.log("Validating API key...")
+					const { valid, error: validationError } = await validateApiKey(
+						apiKey.trim(),
+					)
+					if (!valid) {
+						console.error(
+							`\n✗ ${validationError}. Please check your key and try again.\n`,
+						)
+						process.exit(1)
 					}
 
-					let config: Record<string, unknown> = {}
-					if (fs.existsSync(configPath)) {
-						try {
-							config = JSON.parse(fs.readFileSync(configPath, "utf-8"))
-						} catch {
-							config = {}
-						}
-					}
-
-					if (!config.plugins) config.plugins = {}
-					const plugins = config.plugins as Record<string, unknown>
-					if (!plugins.entries) plugins.entries = {}
-					const entries = plugins.entries as Record<string, unknown>
-
-					entries["openclaw-supermemory"] = {
-						enabled: true,
-						config: {
-							apiKey: apiKey.trim(),
-						},
-					}
-
-					if (!fs.existsSync(configDir)) {
-						fs.mkdirSync(configDir, { recursive: true })
-					}
-
-					fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
-
-					console.log("\n✓ API key saved to ~/.openclaw/openclaw.json")
+					saveApiKey(apiKey.trim())
+					console.log("\n✓ API key saved!")
 					console.log(
 						"  Restart OpenClaw to apply changes: openclaw gateway --force\n",
 					)
@@ -378,7 +371,7 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 
 					if (!apiKeyDisplay) {
 						console.log("✗ No API key configured")
-						console.log("  Run: openclaw supermemory setup\n")
+						console.log("  Run: openclaw supermemory login\n")
 						return
 					}
 
