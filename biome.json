@@ -17,6 +17,7 @@
 			"!**/dist",
 			"!**/bun.lock",
 			"!**/*.lock",
+			"!lib/validate.ts",
 			"!lib/validate.js"
 		]
 	},

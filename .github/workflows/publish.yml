@@ -1,11 +1,14 @@
 name: Publish Package
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
     paths:
       - "package.json"
+      - "lib/**"
+      - ".github/workflows/publish.yml"
 
 jobs:
   publish:
@@ -58,7 +61,7 @@ jobs:
 
       - name: Build
         if: steps.version-check.outputs.changed == 'true'
-        run: bun run build:lib
+        run: bun run build
 
       - name: Publish
         if: steps.version-check.outputs.changed == 'true'
