@@ -3,7 +3,7 @@ import os from "node:os"
 import path from "node:path"
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
 import { SupermemoryClient } from "./client.ts"
-import { registerCli, registerCliSetup } from "./commands/cli.ts"
+import { registerCli } from "./commands/cli.ts"
 import { registerCommands, registerStubCommands } from "./commands/slash.ts"
 import { parseConfig, supermemoryConfigSchema } from "./config.ts"
 import { buildCaptureHandler } from "./hooks/capture.ts"
@@ -37,9 +37,8 @@ export default {
 
 		initLogger(api.logger, cfg.debug)
 
-		registerCliSetup(api)
-
 		if (!cfg.apiKey) {
+			registerCli(api)
 			api.logger.info(
 				"supermemory: not configured - run 'openclaw supermemory setup'",
 			)
@@ -48,6 +47,7 @@ export default {
 		}
 
 		const client = new SupermemoryClient(cfg.apiKey, cfg.containerTag)
+		registerCli(api, client)
 
 		const memoryRuntime = buildMemoryRuntime(client)
 		const noopFlushPlan = () => null
@@ -87,7 +87,6 @@ export default {
 		}
 
 		registerCommands(api, client, cfg, getSessionKey)
-		registerCli(api, client, cfg)
 
 		api.registerService({
 			id: "openclaw-supermemory",

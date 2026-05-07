@@ -1,6 +1,14 @@
 {
 	"id": "openclaw-supermemory",
 	"kind": "memory",
+	"contracts": {
+		"tools": [
+			"supermemory_search",
+			"supermemory_store",
+			"supermemory_forget",
+			"supermemory_profile"
+		]
+	},
 	"uiHints": {
 		"apiKey": {
 			"label": "Supermemory API Key",
