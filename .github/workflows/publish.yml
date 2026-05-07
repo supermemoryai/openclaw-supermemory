@@ -58,7 +58,7 @@ jobs:
 
       - name: Build
         if: steps.version-check.outputs.changed == 'true'
-        run: bun run build:lib
+        run: bun run build:plugin
 
       - name: Publish
         if: steps.version-check.outputs.changed == 'true'

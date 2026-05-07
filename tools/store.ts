@@ -44,7 +44,7 @@ export function registerStoreTool(
 					`store tool: category="${category}" customId="${customId}" containerTag="${params.containerTag ?? "default"}"`,
 				)
 
-				await client.addMemory(
+				const { status } = await client.addMemory(
 					params.text,
 					{ type: category, source: "openclaw_tool" },
 					customId,
@@ -54,6 +54,17 @@ export function registerStoreTool(
 
 				const preview =
 					params.text.length > 80 ? `${params.text.slice(0, 80)}…` : params.text
+
+				if (status === "failed") {
+					return {
+						content: [
+							{
+								type: "text" as const,
+								text: `Memory store failed (server returned status="failed") for: "${preview}"`,
+							},
+						],
+					}
+				}
 
 				return {
 					content: [{ type: "text" as const, text: `Stored: "${preview}"` }],

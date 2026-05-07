@@ -52,7 +52,7 @@ export function registerCommands(
 			try {
 				const category = detectCategory(text)
 				const sk = getSessionKey()
-				await client.addMemory(
+				const { status } = await client.addMemory(
 					text,
 					{ type: category, source: "openclaw_command" },
 					sk ? buildDocumentId(sk) : undefined,
@@ -61,6 +61,11 @@ export function registerCommands(
 				)
 
 				const preview = text.length > 60 ? `${text.slice(0, 60)}…` : text
+				if (status === "failed") {
+					return {
+						text: `Memory store failed (server returned status="failed") for: "${preview}"`,
+					}
+				}
 				return { text: `Remembered: "${preview}"` }
 			} catch (err) {
 				log.error("/remember failed", err)

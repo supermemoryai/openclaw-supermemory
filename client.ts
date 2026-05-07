@@ -58,7 +58,7 @@ export class SupermemoryClient {
 		customId?: string,
 		containerTag?: string,
 		entityContext?: string,
-	): Promise<{ id: string }> {
+	): Promise<{ id: string; status: string }> {
 		const cleaned = sanitizeContent(content)
 		const tag = containerTag ?? this.containerTag
 
@@ -81,8 +81,17 @@ export class SupermemoryClient {
 			...(clampedCtx && { entityContext: clampedCtx }),
 		})
 
-		log.debugResponse("add", { id: result.id })
-		return { id: result.id }
+		log.debugResponse("add", { id: result.id, status: result.status })
+
+		if (result.status === "failed") {
+			log.warn(
+				`add returned status="failed" for id=${result.id}` +
+					(customId ? ` customId=${customId}` : "") +
+					` (contentLength=${cleaned.length}, containerTag=${tag})`,
+			)
+		}
+
+		return { id: result.id, status: result.status }
 	}
 
 	async search(
