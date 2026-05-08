@@ -194,9 +194,7 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 					console.log(
 						"  true  - Show how many memories were used in each response (recommended)",
 					)
-					console.log(
-						"  false - Hide memory usage counts from responses",
-					)
+					console.log("  false - Hide memory usage counts from responses")
 					const showMemoryUsageInput = await ask(
 						"Show memory usage (true/false) [true]: ",
 					)

@@ -46,12 +46,16 @@ export function registerCommands(
 
 			if (arg === "on" || arg === "true" || arg === "enable") {
 				cfg.showMemoryUsage = true
-				return { text: "Memory usage display enabled. The model will now show how many memories were used." }
+				return {
+					text: "Memory usage display enabled. The model will now show how many memories were used.",
+				}
 			}
 
 			if (arg === "off" || arg === "false" || arg === "disable") {
 				cfg.showMemoryUsage = false
-				return { text: "Memory usage display disabled. The model will no longer show memory counts." }
+				return {
+					text: "Memory usage display disabled. The model will no longer show memory counts.",
+				}
 			}
 
 			if (!arg) {
