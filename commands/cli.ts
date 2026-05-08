@@ -19,23 +19,26 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 			cmd
 				.command("login")
 				.description("Connect Supermemory via browser login")
-				.action(async () => {
+				.option("--browserless", "Skip browser auth and paste API key directly")
+				.action(async (opts: { browserless?: boolean }) => {
 					console.log("\n🧠 Supermemory Login\n")
-					console.log("Opening browser for authentication...")
 
-					const result = await startAuthFlow()
+					if (!opts.browserless) {
+						const result = await startAuthFlow()
 
-					if (result.success) {
-						console.log("\n✓ Successfully authenticated with Supermemory!")
-						console.log(
-							"  Restart OpenClaw to apply changes: openclaw gateway --force\n",
-						)
-						return
+						if (result.success) {
+							console.log("\n✓ Successfully authenticated with Supermemory!")
+							console.log(
+								"  Restart OpenClaw to apply changes: openclaw gateway --force\n",
+							)
+							return
+						}
+
+						// Browser auth failed — fall back to manual paste
+						console.log(`\nBrowser authentication failed (${result.error}).`)
 					}
 
-					// Browser auth failed — fall back to manual paste
-					console.log(`\nBrowser authentication failed (${result.error}).`)
-					console.log("You can paste your API key manually instead.")
+					console.log("You can paste your API key manually.")
 					console.log("Get your API key from: https://console.supermemory.ai\n")
 
 					const rl = readline.createInterface({
@@ -47,7 +50,7 @@ export function registerCliSetup(api: OpenClawPluginApi): void {
 					})
 					rl.close()
 
-					if (!apiKey.trim()?.startsWith("sm_")) {
+					if (!apiKey.trim().startsWith("sm_")) {
 						console.error("\n✗ Invalid or missing API key.\n")
 						process.exit(1)
 					}

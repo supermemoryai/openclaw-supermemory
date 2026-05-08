@@ -22,6 +22,14 @@ openclaw supermemory login
 
 Opens your browser to authenticate with Supermemory. The API key is saved automatically.
 
+For headless servers or SSH sessions:
+
+```bash
+openclaw supermemory login --browserless
+```
+
+Prompts you to paste your API key directly. Get your key from [console.supermemory.ai](https://console.supermemory.ai).
+
 ### Advanced Setup
 
 ```bash
@@ -61,7 +69,8 @@ The AI uses these tools autonomously. With custom container tags enabled, all to
 ## CLI Commands
 
 ```bash
-openclaw supermemory login              # Authenticate with Supermemory
+openclaw supermemory login              # Authenticate via browser
+openclaw supermemory login --browserless # Paste API key directly (for SSH/headless)
 openclaw supermemory setup-advanced     # Configure all options
 openclaw supermemory status             # View current configuration
 openclaw supermemory search <query>     # Search memories
