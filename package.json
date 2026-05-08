@@ -31,7 +31,7 @@
 		"check-types": "tsc --noEmit",
 		"lint": "bunx @biomejs/biome ci .",
 		"lint:fix": "bunx @biomejs/biome check --write .",
-		"build:lib": "esbuild lib/validate.ts --bundle --minify --format=esm --platform=node --target=es2022 --external:node:crypto --outfile=lib/validate.js",
+		"build:lib": "node -e \"const fs=require('node:fs'); fs.accessSync('lib/validate.js'); fs.accessSync('lib/validate.d.ts')\"",
 		"prepack": "npm run build"
 	},
 	"peerDependencies": {
