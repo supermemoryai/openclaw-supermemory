@@ -54,10 +54,15 @@ export function registerCommands(
 				return { text: "Memory usage display disabled. The model will no longer show memory counts." }
 			}
 
-			// No arg or unrecognized: toggle
-			cfg.showMemoryUsage = !cfg.showMemoryUsage
-			const state = cfg.showMemoryUsage ? "enabled" : "disabled"
-			return { text: `Memory usage display ${state}. Use /memory-usage on|off to set explicitly.` }
+			if (!arg) {
+				cfg.showMemoryUsage = !cfg.showMemoryUsage
+				const state = cfg.showMemoryUsage ? "enabled" : "disabled"
+				return {
+					text: `Memory usage display ${state}. Use /memory-usage on|off to set explicitly.`,
+				}
+			}
+
+			return { text: "Usage: /memory-usage [on|off]" }
 		},
 	})
 
