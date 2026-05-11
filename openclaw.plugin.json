@@ -58,6 +58,11 @@
 			"help": "Enable verbose debug logs for API calls and responses",
 			"advanced": true
 		},
+		"showMemoryUsage": {
+			"label": "Show Memory Usage",
+			"help": "Show how many memories were loaded and used in AI responses",
+			"advanced": true
+		},
 		"enableCustomContainerTags": {
 			"label": "Enable Custom Container Tags",
 			"help": "Enable AI-driven routing to custom containers",
@@ -87,6 +92,7 @@
 			"captureMode": { "type": "string", "enum": ["everything", "all"] },
 			"entityContext": { "type": "string", "maxLength": 1500 },
 			"debug": { "type": "boolean" },
+			"showMemoryUsage": { "type": "boolean" },
 			"enableCustomContainerTags": { "type": "boolean" },
 			"customContainers": {
 				"type": "array",
