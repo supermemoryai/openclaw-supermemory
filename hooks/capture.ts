@@ -34,7 +34,10 @@ export function buildCaptureHandler(
 			`agent_end fired: provider="${ctx.messageProvider}" success=${event.success}`,
 		)
 		const provider = ctx.messageProvider as string
-		if (SKIPPED_PROVIDERS.includes(provider)) {
+		const trigger = ctx.trigger as string | undefined
+		const isAutomatedRun = trigger && trigger !== "user" && trigger !== "manual"
+
+		if (isAutomatedRun || SKIPPED_PROVIDERS.includes(provider)) {
 			return
 		}
 

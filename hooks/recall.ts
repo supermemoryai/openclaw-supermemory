@@ -179,6 +179,11 @@ export function buildRecallHandler(
 		event: Record<string, unknown>,
 		ctx?: Record<string, unknown>,
 	) => {
+		const trigger = ctx?.trigger as string | undefined
+		if (trigger && trigger !== "user" && trigger !== "manual") {
+			return
+		}
+
 		const rawPrompt = event.prompt as string | undefined
 		if (!rawPrompt || rawPrompt.length < 5) return
 
