@@ -17,6 +17,7 @@
 		"tools/*.ts",
 		"hooks/*.ts",
 		"commands/*.ts",
+		"tests/*.ts",
 		"types/*.d.ts",
 		"lib/*.d.ts"
 	],

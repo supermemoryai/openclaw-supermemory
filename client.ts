@@ -32,6 +32,81 @@ function limitText(text: string, max: number): string {
 	return text.length > max ? `${text.slice(0, max)}…` : text
 }
 
+export function normalizeMemoryText(text: string | undefined): string {
+	return sanitizeContent(text ?? "")
+		.trim()
+		.replace(/\s+/g, " ")
+		.toLowerCase()
+}
+
+function getQueryTokens(normalizedQuery: string): string[] {
+	if (!normalizedQuery) return []
+	return normalizedQuery.split(/\s+/).filter(Boolean)
+}
+
+function getTokenCoverage(
+	normalizedText: string,
+	queryTokens: string[],
+): number {
+	if (queryTokens.length === 0) return 0
+	const matched = queryTokens.filter((token) =>
+		normalizedText.includes(token),
+	).length
+	return matched / queryTokens.length
+}
+
+export function findExactContentMatch(
+	results: SearchResult[],
+	query: string,
+): SearchResult | undefined {
+	const normalizedQuery = normalizeMemoryText(query)
+	if (!normalizedQuery) return undefined
+
+	return results.find(
+		(result) =>
+			normalizeMemoryText(result.content || result.memory) === normalizedQuery,
+	)
+}
+
+export function rerankSearchResults(
+	query: string,
+	results: SearchResult[],
+): SearchResult[] {
+	const normalizedQuery = normalizeMemoryText(query)
+	if (!normalizedQuery || results.length <= 1) return results
+
+	const queryTokens = getQueryTokens(normalizedQuery)
+
+	return [...results]
+		.map((result, index) => {
+			const normalizedContent = normalizeMemoryText(
+				result.content || result.memory,
+			)
+			return {
+				index,
+				result,
+				exact: normalizedContent === normalizedQuery ? 1 : 0,
+				contains: normalizedContent.includes(normalizedQuery) ? 1 : 0,
+				tokenCoverage: getTokenCoverage(normalizedContent, queryTokens),
+				similarity: result.similarity ?? 0,
+				contentLength: normalizedContent.length || Number.MAX_SAFE_INTEGER,
+			}
+		})
+		.sort((a, b) => {
+			if (b.exact !== a.exact) return b.exact - a.exact
+			if (b.contains !== a.contains) return b.contains - a.contains
+			if (b.tokenCoverage !== a.tokenCoverage) {
+				return b.tokenCoverage - a.tokenCoverage
+			}
+			if (b.similarity !== a.similarity) return b.similarity - a.similarity
+			if (a.contentLength !== b.contentLength) {
+				return a.contentLength - b.contentLength
+			}
+			return a.index - b.index
+		})
+		.map(({ result }) => result)
+}
+
 export class SupermemoryClient {
 	private client: Supermemory
 	private containerTag: string
@@ -90,27 +165,31 @@ export class SupermemoryClient {
 		limit = 5,
 		containerTag?: string,
 	): Promise<SearchResult[]> {
+		const cleanedQuery = sanitizeContent(query)
 		const tag = containerTag ?? this.containerTag
 
 		log.debugRequest("search.memories", {
-			query,
+			query: cleanedQuery,
 			limit,
 			containerTag: tag,
 		})
 
 		const response = await this.client.search.memories({
-			q: query,
+			q: cleanedQuery,
 			containerTag: tag,
 			limit,
+			rerank: true,
+			rewriteQuery: false,
 		})
 
-		const results: SearchResult[] = (response.results ?? []).map((r) => ({
+		const rawResults: SearchResult[] = (response.results ?? []).map((r) => ({
 			id: r.id,
 			content: r.memory ?? "",
 			memory: r.memory,
 			similarity: r.similarity,
 			metadata: r.metadata ?? undefined,
 		}))
+		const results = rerankSearchResults(cleanedQuery, rawResults)
 
 		log.debugResponse("search.memories", { count: results.length })
 		return results
@@ -168,17 +247,25 @@ export class SupermemoryClient {
 		query: string,
 		containerTag?: string,
 	): Promise<{ success: boolean; message: string }> {
-		log.debugRequest("forgetByQuery", { query, containerTag })
+		const cleanedQuery = sanitizeContent(query)
+		log.debugRequest("forgetByQuery", { query: cleanedQuery, containerTag })
 
-		const results = await this.search(query, 5, containerTag)
+		const results = await this.search(cleanedQuery, 10, containerTag)
 		if (results.length === 0) {
 			return { success: false, message: "No matching memory found to forget." }
 		}
 
-		const target = results[0]
-		await this.deleteMemory(target.id, containerTag)
+		const target = findExactContentMatch(results, cleanedQuery) ?? results[0]
+		const deleted = await this.deleteMemory(target.id, containerTag)
 
 		const preview = limitText(target.content || target.memory || "", 100)
+		if (!deleted.forgotten) {
+			return {
+				success: false,
+				message: `Unable to confirm forgetting: "${preview}"`,
+			}
+		}
+
 		return { success: true, message: `Forgot: "${preview}"` }
 	}
 
