@@ -47,7 +47,12 @@ export class SupermemoryClient {
 			log.warn(`container tag warning: ${tagCheck.reason}`)
 		}
 
-		this.client = new Supermemory({ apiKey })
+		// `x-sm-source` is read by mono's API to attribute searches and
+		// writes to the OpenClaw plugin in PostHog / `document.source`.
+		this.client = new Supermemory({
+			apiKey,
+			defaultHeaders: { "x-sm-source": "openclaw" },
+		})
 		this.containerTag = containerTag
 		log.info(`initialized (container: ${containerTag})`)
 	}
@@ -62,10 +67,19 @@ export class SupermemoryClient {
 		const cleaned = sanitizeContent(content)
 		const tag = containerTag ?? this.containerTag
 
+		// Always stamp `sm_source` so mono's `document.source` column attributes
+		// these writes to the OpenClaw plugin. Existing callers can still pass
+		// extra metadata (e.g. `source: "openclaw_tool"`) and it is preserved
+		// underneath the canonical `sm_source` key.
+		const mergedMetadata: Record<string, string | number | boolean> = {
+			sm_source: "openclaw",
+			...(metadata ?? {}),
+		}
+
 		log.debugRequest("add", {
 			contentLength: cleaned.length,
 			customId,
-			metadata,
+			metadata: mergedMetadata,
 			containerTag: tag,
 		})
 
@@ -76,7 +90,7 @@ export class SupermemoryClient {
 		const result = await this.client.add({
 			content: cleaned,
 			containerTag: tag,
-			...(metadata && { metadata }),
+			metadata: mergedMetadata,
 			...(customId && { customId }),
 			...(clampedCtx && { entityContext: clampedCtx }),
 		})

@@ -77,6 +77,10 @@ export default {
 		registerStoreTool(api, client, cfg, getSessionKey)
 		registerForgetTool(api, client, cfg)
 		registerProfileTool(api, client, cfg)
+		registerSearchTool(api, client, cfg, "supermemory-search")
+		registerStoreTool(api, client, cfg, getSessionKey, "supermemory-save")
+		registerForgetTool(api, client, cfg, "supermemory-forget")
+		registerProfileTool(api, client, cfg, "supermemory-profile")
 
 		if (cfg.autoRecall) {
 			api.on("before_prompt_build", buildRecallHandler(client, cfg))

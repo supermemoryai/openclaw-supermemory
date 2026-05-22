@@ -14,10 +14,11 @@ export function registerStoreTool(
 	client: SupermemoryClient,
 	cfg: SupermemoryConfig,
 	getSessionKey: () => string | undefined,
+	toolName = "supermemory_store",
 ): void {
 	api.registerTool(
 		{
-			name: "supermemory_store",
+			name: toolName,
 			label: "Memory Store",
 			description: "Save important information to long-term memory.",
 			parameters: Type.Object({
@@ -46,7 +47,7 @@ export function registerStoreTool(
 
 				const { status } = await client.addMemory(
 					params.text,
-					{ type: category, source: "openclaw_tool" },
+					{ type: category, sm_capture_mode: "tool" },
 					customId,
 					params.containerTag,
 					cfg.entityContext,
@@ -71,6 +72,6 @@ export function registerStoreTool(
 				}
 			},
 		},
-		{ name: "supermemory_store" },
+		{ name: toolName },
 	)
 }
