@@ -2,6 +2,7 @@ import type { ProfileSearchResult, SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 import { stripInboundMetadata } from "../memory.ts"
+import { isInteractiveTrigger } from "./trigger.ts"
 
 function formatRelativeTime(isoTimestamp: string): string {
 	try {
@@ -179,6 +180,11 @@ export function buildRecallHandler(
 		event: Record<string, unknown>,
 		ctx?: Record<string, unknown>,
 	) => {
+		const trigger = ctx?.trigger as string | undefined
+		if (!isInteractiveTrigger(trigger)) {
+			return
+		}
+
 		const rawPrompt = event.prompt as string | undefined
 		if (!rawPrompt || rawPrompt.length < 5) return
 
