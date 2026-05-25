@@ -8,10 +8,11 @@ export function registerForgetTool(
 	api: OpenClawPluginApi,
 	client: SupermemoryClient,
 	_cfg: SupermemoryConfig,
+	toolName = "supermemory_forget",
 ): void {
 	api.registerTool(
 		{
-			name: "supermemory_forget",
+			name: toolName,
 			label: "Memory Forget",
 			description:
 				"Forget/delete a specific memory. Searches for the closest match and removes it.",
@@ -66,6 +67,6 @@ export function registerForgetTool(
 				}
 			},
 		},
-		{ name: "supermemory_forget" },
+		{ name: toolName },
 	)
 }

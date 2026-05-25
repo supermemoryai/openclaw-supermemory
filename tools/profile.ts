@@ -8,10 +8,11 @@ export function registerProfileTool(
 	api: OpenClawPluginApi,
 	client: SupermemoryClient,
 	_cfg: SupermemoryConfig,
+	toolName = "supermemory_profile",
 ): void {
 	api.registerTool(
 		{
-			name: "supermemory_profile",
+			name: toolName,
 			label: "User Profile",
 			description:
 				"Get a summary of what is known about the user — stable preferences and recent context.",
@@ -77,6 +78,6 @@ export function registerProfileTool(
 				}
 			},
 		},
-		{ name: "supermemory_profile" },
+		{ name: toolName },
 	)
 }

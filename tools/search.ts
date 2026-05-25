@@ -8,10 +8,11 @@ export function registerSearchTool(
 	api: OpenClawPluginApi,
 	client: SupermemoryClient,
 	_cfg: SupermemoryConfig,
+	toolName = "supermemory_search",
 ): void {
 	api.registerTool(
 		{
-			name: "supermemory_search",
+			name: toolName,
 			label: "Memory Search",
 			description:
 				"Search through long-term memories for relevant information.",
@@ -77,6 +78,6 @@ export function registerSearchTool(
 				}
 			},
 		},
-		{ name: "supermemory_search" },
+		{ name: toolName },
 	)
 }

@@ -47,7 +47,12 @@ export class SupermemoryClient {
 			log.warn(`container tag warning: ${tagCheck.reason}`)
 		}
 
-		this.client = new Supermemory({ apiKey })
+		// `x-sm-source` is read by mono's API to attribute searches and
+		// writes to the OpenClaw plugin in PostHog / `document.source`.
+		this.client = new Supermemory({
+			apiKey,
+			defaultHeaders: { "x-sm-source": "openclaw" },
+		})
 		this.containerTag = containerTag
 		log.info(`initialized (container: ${containerTag})`)
 	}
@@ -58,14 +63,23 @@ export class SupermemoryClient {
 		customId?: string,
 		containerTag?: string,
 		entityContext?: string,
-	): Promise<{ id: string }> {
+	): Promise<{ id: string; status: string }> {
 		const cleaned = sanitizeContent(content)
 		const tag = containerTag ?? this.containerTag
+
+		// Always stamp `sm_source` so mono's `document.source` column attributes
+		// these writes to the OpenClaw plugin. Existing callers can still pass
+		// extra metadata (e.g. `source: "openclaw_tool"`) and it is preserved
+		// underneath the canonical `sm_source` key.
+		const mergedMetadata: Record<string, string | number | boolean> = {
+			sm_source: "openclaw",
+			...(metadata ?? {}),
+		}
 
 		log.debugRequest("add", {
 			contentLength: cleaned.length,
 			customId,
-			metadata,
+			metadata: mergedMetadata,
 			containerTag: tag,
 		})
 
@@ -76,13 +90,22 @@ export class SupermemoryClient {
 		const result = await this.client.add({
 			content: cleaned,
 			containerTag: tag,
-			...(metadata && { metadata }),
+			metadata: mergedMetadata,
 			...(customId && { customId }),
 			...(clampedCtx && { entityContext: clampedCtx }),
 		})
 
-		log.debugResponse("add", { id: result.id })
-		return { id: result.id }
+		log.debugResponse("add", { id: result.id, status: result.status })
+
+		if (result.status === "failed") {
+			log.warn(
+				`add returned status="failed" for id=${result.id}` +
+					(customId ? ` customId=${customId}` : "") +
+					` (contentLength=${cleaned.length}, containerTag=${tag})`,
+			)
+		}
+
+		return { id: result.id, status: result.status }
 	}
 
 	async search(
