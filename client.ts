@@ -72,8 +72,9 @@ export class SupermemoryClient {
 		// extra metadata (e.g. `source: "openclaw_tool"`) and it is preserved
 		// underneath the canonical `sm_source` key.
 		const mergedMetadata: Record<string, string | number | boolean> = {
-			sm_source: "openclaw",
 			...(metadata ?? {}),
+			sm_source: "openclaw",
+			sm_client: "openclaw",
 		}
 
 		log.debugRequest("add", {
