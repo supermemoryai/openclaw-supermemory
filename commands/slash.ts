@@ -4,7 +4,60 @@ import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 import { buildDocumentId, detectCategory } from "../memory.ts"
 
-export function registerStubCommands(api: OpenClawPluginApi): void {
+function maskApiKey(apiKey: string | undefined): string {
+	if (!apiKey) return "not configured"
+	if (apiKey.length <= 12) return "configured"
+	return `${apiKey.slice(0, 8)}...${apiKey.slice(-4)}`
+}
+
+function formatSupermemoryStatus(
+	cfg: SupermemoryConfig,
+	authenticated: boolean,
+): string {
+	const apiKeySource =
+		cfg.apiKey && process.env.SUPERMEMORY_OPENCLAW_API_KEY === cfg.apiKey
+			? "environment"
+			: "plugin config"
+	const customContainerState = cfg.enableCustomContainerTags
+		? "enabled"
+		: "disabled"
+	const lines = [
+		"Supermemory Status",
+		"",
+		`Authenticated: ${authenticated ? "yes" : "no"}`,
+		`API key: ${maskApiKey(cfg.apiKey)}${cfg.apiKey ? ` (${apiKeySource})` : ""}`,
+		`Container tag: ${cfg.containerTag}`,
+		`Auto-recall: ${cfg.autoRecall}`,
+		`Auto-capture: ${cfg.autoCapture}`,
+		`Max recall results: ${cfg.maxRecallResults}`,
+		`Profile frequency: ${cfg.profileFrequency}`,
+		`Capture mode: ${cfg.captureMode}`,
+		`Memory usage display: ${cfg.showMemoryUsage}`,
+		`Custom container tags: ${customContainerState}`,
+		`Custom container count: ${cfg.customContainers.length}`,
+	]
+
+	if (!authenticated) {
+		lines.push("", "Run `openclaw supermemory setup` to connect Supermemory.")
+	}
+
+	return lines.join("\n")
+}
+
+export function registerStubCommands(
+	api: OpenClawPluginApi,
+	cfg: SupermemoryConfig,
+): void {
+	api.registerCommand({
+		name: "supermemory-status",
+		description: "Show Supermemory configuration status",
+		acceptsArgs: false,
+		requireAuth: false,
+		handler: async () => {
+			return { text: formatSupermemoryStatus(cfg, false) }
+		},
+	})
+
 	api.registerCommand({
 		name: "remember",
 		description: "Save something to memory",
@@ -67,6 +120,16 @@ export function registerCommands(
 			}
 
 			return { text: "Usage: /memory-usage [on|off]" }
+		},
+	})
+
+	api.registerCommand({
+		name: "supermemory-status",
+		description: "Show Supermemory configuration status",
+		acceptsArgs: false,
+		requireAuth: false,
+		handler: async () => {
+			return { text: formatSupermemoryStatus(cfg, true) }
 		},
 	})
 

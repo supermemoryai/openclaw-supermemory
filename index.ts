@@ -42,7 +42,7 @@ export default {
 			api.logger.info(
 				"supermemory: not configured - run 'openclaw supermemory setup'",
 			)
-			registerStubCommands(api)
+			registerStubCommands(api, cfg)
 			return
 		}
 

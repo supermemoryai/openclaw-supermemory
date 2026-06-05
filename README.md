@@ -42,10 +42,11 @@ Everything runs in the cloud. Supermemory handles extraction, deduplication, and
 
 ## Slash Commands
 
-| Command            | Description                             |
-| ------------------ | --------------------------------------- |
-| `/remember <text>` | Manually save something to memory.      |
-| `/recall <query>`  | Search memories with similarity scores. |
+| Command               | Description                             |
+| --------------------- | --------------------------------------- |
+| `/remember <text>`    | Manually save something to memory.      |
+| `/recall <query>`     | Search memories with similarity scores. |
+| `/supermemory-status` | Show Supermemory configuration status.  |
 
 ## AI Tools
 
