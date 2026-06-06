@@ -1,6 +1,12 @@
 {
 	"id": "openclaw-supermemory",
 	"kind": "memory",
+	"commandAliases": [
+		{
+			"name": "supermemory",
+			"cliCommand": "supermemory"
+		}
+	],
 	"contracts": {
 		"tools": [
 			"supermemory_search",

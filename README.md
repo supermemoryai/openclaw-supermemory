@@ -12,12 +12,11 @@ Long-term memory for OpenClaw. Automatically remembers conversations, recalls re
 openclaw plugins install @supermemory/openclaw-supermemory
 ```
 
-Restart OpenClaw after installing.
-
 ## Setup
 
 ```bash
 openclaw supermemory setup
+openclaw gateway restart
 ```
 
 Enter your API key from [app.supermemory.ai](https://app.supermemory.ai/?view=integrations). That's it.
@@ -26,6 +25,7 @@ Enter your API key from [app.supermemory.ai](https://app.supermemory.ai/?view=in
 
 ```bash
 openclaw supermemory setup-advanced
+openclaw gateway restart
 ```
 
 Configure all options interactively: container tag, auto-recall, auto-capture, capture mode, custom container tags, and more.
@@ -100,9 +100,16 @@ Or configure in `~/.openclaw/openclaw.json`:
 ```json
 {
   "plugins": {
+    "slots": {
+      "memory": "openclaw-supermemory"
+    },
     "entries": {
       "openclaw-supermemory": {
         "enabled": true,
+        "hooks": {
+          "allowPromptInjection": true,
+          "allowConversationAccess": true
+        },
         "config": {
           "apiKey": "${SUPERMEMORY_OPENCLAW_API_KEY}",
           "containerTag": "my_memory",
