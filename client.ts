@@ -36,7 +36,7 @@ export class SupermemoryClient {
 	private client: Supermemory
 	private containerTag: string
 
-	constructor(apiKey: string, containerTag: string) {
+	constructor(apiKey: string, containerTag: string, baseUrl?: string) {
 		const keyCheck = validateApiKeyFormat(apiKey)
 		if (!keyCheck.valid) {
 			throw new Error(`invalid API key: ${keyCheck.reason}`)
@@ -51,10 +51,15 @@ export class SupermemoryClient {
 		// writes to the OpenClaw plugin in PostHog / `document.source`.
 		this.client = new Supermemory({
 			apiKey,
+			// Only override the SDK default when a base URL is configured, so
+			// an unset value keeps the SDK's own default (env / cloud) resolution.
+			...(baseUrl ? { baseURL: baseUrl } : {}),
 			defaultHeaders: { "x-sm-source": "openclaw" },
 		})
 		this.containerTag = containerTag
-		log.info(`initialized (container: ${containerTag})`)
+		log.info(
+			`initialized (container: ${containerTag}, endpoint: ${baseUrl ?? "default"})`,
+		)
 	}
 
 	async addMemory(

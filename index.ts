@@ -46,7 +46,11 @@ export default {
 			return
 		}
 
-		const client = new SupermemoryClient(cfg.apiKey, cfg.containerTag)
+		const client = new SupermemoryClient(
+			cfg.apiKey,
+			cfg.containerTag,
+			cfg.baseUrl,
+		)
 		registerCli(api, client)
 
 		const memoryRuntime = buildMemoryRuntime(client)

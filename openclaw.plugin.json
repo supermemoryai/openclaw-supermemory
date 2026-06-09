@@ -22,6 +22,12 @@
 			"placeholder": "sm_...",
 			"help": "Your API key from app.supermemory.ai (or use ${SUPERMEMORY_OPENCLAW_API_KEY})"
 		},
+		"baseUrl": {
+			"label": "Base URL",
+			"placeholder": "https://api.supermemory.ai",
+			"help": "API endpoint. Defaults to Supermemory production (https://api.supermemory.ai). Set to a self-hosted / local URL (e.g. http://localhost:8000) to point at your own instance. Leave blank for the cloud.",
+			"advanced": true
+		},
 		"containerTag": {
 			"label": "Container Tag",
 			"placeholder": "openclaw_myhostname",
@@ -90,6 +96,7 @@
 		"additionalProperties": false,
 		"properties": {
 			"apiKey": { "type": "string" },
+			"baseUrl": { "type": "string" },
 			"containerTag": { "type": "string" },
 			"autoRecall": { "type": "boolean" },
 			"autoCapture": { "type": "boolean" },

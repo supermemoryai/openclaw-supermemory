@@ -71,10 +71,11 @@ openclaw supermemory wipe               # Delete all memories (requires confirma
 
 ## Configuration
 
-Set API key via environment variable:
+Set API key (and, for self-hosted instances, the base URL) via environment variables:
 
 ```bash
 export SUPERMEMORY_OPENCLAW_API_KEY="sm_..."
+export SUPERMEMORY_BASE_URL="http://localhost:8000"   # optional; defaults to https://api.supermemory.ai
 ```
 
 Or configure in `~/.openclaw/openclaw.json`:
@@ -83,7 +84,8 @@ Or configure in `~/.openclaw/openclaw.json`:
 
 | Key                           | Type      | Default               | Description                                               |
 | ----------------------------- | --------- | --------------------- | --------------------------------------------------------- |
-| `apiKey`                      | `string`  | —                     | Supermemory API key.                                      |
+| `apiKey`                      | `string`  | —                       | Supermemory API key.                                      |
+| `baseUrl`                     | `string`  | `https://api.supermemory.ai` | API endpoint. Set to a self-hosted / local URL to point at your own instance; leave blank for the cloud. |
 | `containerTag`                | `string`  | `openclaw_{hostname}` | Root memory namespace.                                    |
 | `autoRecall`                  | `boolean` | `true`                | Inject relevant memories before every AI turn.            |
 | `autoCapture`                 | `boolean` | `true`                | Store conversations after every turn.                     |
@@ -112,6 +114,7 @@ Or configure in `~/.openclaw/openclaw.json`:
         },
         "config": {
           "apiKey": "${SUPERMEMORY_OPENCLAW_API_KEY}",
+          "baseUrl": "https://api.supermemory.ai",
           "containerTag": "my_memory",
           "autoRecall": true,
           "autoCapture": true,

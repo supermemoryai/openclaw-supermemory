@@ -4,6 +4,7 @@ import * as path from "node:path"
 import * as readline from "node:readline"
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
 import type { SupermemoryClient } from "../client.ts"
+import { DEFAULT_BASE_URL } from "../config.ts"
 import { log } from "../logger.ts"
 
 const SUPERMEMORY_TOOL_NAMES = [
@@ -152,6 +153,15 @@ export function registerCli(
 					const containerTag = await ask(
 						`Container tag [openclaw_${defaultTag}]: `,
 					)
+
+					console.log("\nBase URL:")
+					console.log(
+						"  Leave blank for Supermemory cloud (https://api.supermemory.ai).",
+					)
+					console.log(
+						"  Or enter a custom URL for a self-hosted / local instance (e.g. http://localhost:8000).",
+					)
+					const baseUrlInput = await ask(`Base URL [${DEFAULT_BASE_URL}]: `)
 
 					console.log("\nAuto-recall:")
 					console.log(
@@ -331,6 +341,10 @@ export function registerCli(
 							.trim()
 							.replace(/[^a-zA-Z0-9_]/g, "_")
 					}
+					const baseUrlTrimmed = baseUrlInput.trim()
+					if (baseUrlTrimmed && baseUrlTrimmed !== DEFAULT_BASE_URL) {
+						pluginConfig.baseUrl = baseUrlTrimmed
+					}
 					if (!autoRecall) pluginConfig.autoRecall = false
 					if (!autoCapture) pluginConfig.autoCapture = false
 					if (maxRecallResults !== 10)
@@ -373,6 +387,9 @@ export function registerCli(
 					)
 					console.log(
 						`  Container tag:    ${containerTag.trim() || `openclaw_${defaultTag}`}`,
+					)
+					console.log(
+						`  Base URL:         ${baseUrlTrimmed || DEFAULT_BASE_URL}`,
 					)
 					console.log(`  Auto-recall:      ${autoRecall}`)
 					console.log(`  Auto-capture:     ${autoCapture}`)
@@ -462,6 +479,11 @@ export function registerCli(
 					console.log(
 						`  Container tag:    ${pluginConfig.containerTag ?? defaultTag}`,
 					)
+					const baseUrl =
+						(pluginConfig.baseUrl as string | undefined) ||
+						process.env.SUPERMEMORY_BASE_URL ||
+						DEFAULT_BASE_URL
+					console.log(`  Base URL:         ${baseUrl}`)
 					console.log(`  Auto-recall:      ${pluginConfig.autoRecall ?? true}`)
 					console.log(`  Auto-capture:     ${pluginConfig.autoCapture ?? true}`)
 					console.log(

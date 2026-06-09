@@ -10,6 +10,7 @@ export type CustomContainer = {
 
 export type SupermemoryConfig = {
 	apiKey: string | undefined
+	baseUrl: string
 	containerTag: string
 	autoRecall: boolean
 	autoCapture: boolean
@@ -26,6 +27,7 @@ export type SupermemoryConfig = {
 
 const ALLOWED_KEYS = [
 	"apiKey",
+	"baseUrl",
 	"containerTag",
 	"autoRecall",
 	"autoCapture",
@@ -59,6 +61,37 @@ function resolveEnvVars(value: string): string {
 		}
 		return envValue
 	})
+}
+
+export const DEFAULT_BASE_URL = "https://api.supermemory.ai"
+
+// Resolve the API endpoint. Precedence: explicit config `baseUrl` (supports
+// `${ENV}` interpolation) > SUPERMEMORY_BASE_URL env var > the Supermemory
+// cloud default. Anything that isn't a valid http(s) URL falls back to the
+// default so a typo can never silently break startup — the client logs the
+// resolved endpoint so a misconfiguration is visible.
+export function resolveBaseUrl(raw: unknown): string {
+	let value: string | undefined
+	if (typeof raw === "string" && raw.trim()) {
+		try {
+			value = resolveEnvVars(raw.trim())
+		} catch {
+			value = undefined
+		}
+	}
+	if (!value) value = process.env.SUPERMEMORY_BASE_URL
+	if (!value) return DEFAULT_BASE_URL
+
+	const trimmed = value.trim().replace(/\/+$/, "")
+	try {
+		const url = new URL(trimmed)
+		if (url.protocol !== "http:" && url.protocol !== "https:") {
+			return DEFAULT_BASE_URL
+		}
+		return trimmed
+	} catch {
+		return DEFAULT_BASE_URL
+	}
 }
 
 function sanitizeTag(raw: string): string {
@@ -111,6 +144,7 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 
 	return {
 		apiKey,
+		baseUrl: resolveBaseUrl(cfg.baseUrl),
 		containerTag: cfg.containerTag
 			? sanitizeTag(cfg.containerTag as string)
 			: defaultContainerTag(),
@@ -144,6 +178,7 @@ export const supermemoryConfigSchema = {
 		additionalProperties: false,
 		properties: {
 			apiKey: { type: "string" },
+			baseUrl: { type: "string" },
 			containerTag: { type: "string" },
 			autoRecall: { type: "boolean" },
 			autoCapture: { type: "boolean" },
