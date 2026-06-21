@@ -34,7 +34,6 @@ export function registerCommands(
 	api: OpenClawPluginApi,
 	client: SupermemoryClient,
 	cfg: SupermemoryConfig,
-	getSessionKey: () => string | undefined,
 ): void {
 	api.registerCommand({
 		name: "memory-usage",
@@ -85,11 +84,10 @@ export function registerCommands(
 
 			try {
 				const category = detectCategory(text)
-				const sk = getSessionKey()
 				const { status } = await client.addMemory(
 					text,
 					{ type: category, source: "openclaw_command" },
-					sk ? buildDocumentId(sk) : undefined,
+					buildDocumentId(),
 					undefined,
 					cfg.entityContext,
 				)

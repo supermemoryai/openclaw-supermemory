@@ -25,7 +25,6 @@ function getLastTurn(messages: unknown[]): unknown[] {
 export function buildCaptureHandler(
 	client: SupermemoryClient,
 	cfg: SupermemoryConfig,
-	getSessionKey: () => string | undefined,
 ) {
 	return async (
 		event: Record<string, unknown>,
@@ -107,11 +106,10 @@ export function buildCaptureHandler(
 		if (captured.length === 0) return
 
 		const content = captured.join("\n\n")
-		const sk = getSessionKey()
-		const customId = sk ? buildDocumentId(sk) : undefined
+		const customId = buildDocumentId()
 
 		log.debug(
-			`capturing ${captured.length} texts (${content.length} chars) → ${customId ?? "no-session-key"}`,
+			`capturing ${captured.length} texts (${content.length} chars) → ${customId}`,
 		)
 
 		try {

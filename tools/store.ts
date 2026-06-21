@@ -13,7 +13,6 @@ export function registerStoreTool(
 	api: OpenClawPluginApi,
 	client: SupermemoryClient,
 	cfg: SupermemoryConfig,
-	getSessionKey: () => string | undefined,
 	toolName = "supermemory_store",
 ): void {
 	api.registerTool(
@@ -38,8 +37,7 @@ export function registerStoreTool(
 				params: { text: string; category?: string; containerTag?: string },
 			) {
 				const category = params.category ?? detectCategory(params.text)
-				const sk = getSessionKey()
-				const customId = sk ? buildDocumentId(sk) : undefined
+				const customId = buildDocumentId()
 
 				log.debug(
 					`store tool: category="${category}" customId="${customId}" containerTag="${params.containerTag ?? "default"}"`,

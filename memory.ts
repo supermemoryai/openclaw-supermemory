@@ -99,10 +99,10 @@ export function stripInboundMetadata(text: string): string {
 	return result.join("\n").replace(/^\n+/, "").replace(/\n+$/, "")
 }
 
-export function buildDocumentId(sessionKey: string): string {
-	const sanitized = sessionKey
-		.replace(/[^a-zA-Z0-9_]/g, "_")
-		.replace(/_+/g, "_")
-		.replace(/^_|_$/g, "")
-	return `session_${sanitized}`
+export function buildDocumentId(now: Date = new Date()): string {
+	const yyyy = now.getUTCFullYear()
+	const mm = String(now.getUTCMonth() + 1).padStart(2, "0")
+	const dd = String(now.getUTCDate()).padStart(2, "0")
+	const bucket = Math.floor(now.getUTCHours() / 6)
+	return `session_${yyyy}-${mm}-${dd}_b${bucket}`
 }
