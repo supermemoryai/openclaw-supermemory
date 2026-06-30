@@ -185,6 +185,15 @@ export function buildRecallHandler(
 			return
 		}
 
+		const sessionKey = ctx?.sessionKey as string | undefined
+		if (
+			sessionKey &&
+			cfg.allowedAgents?.length &&
+			!cfg.allowedAgents.some((agentId) => sessionKey.includes(agentId))
+		) {
+			return
+		}
+
 		const rawPrompt = event.prompt as string | undefined
 		if (!rawPrompt || rawPrompt.length < 5) return
 
