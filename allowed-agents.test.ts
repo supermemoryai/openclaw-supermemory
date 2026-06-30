@@ -18,7 +18,6 @@ describe("allowedAgents config", () => {
 		const handler = buildCaptureHandler(
 			{ addMemory } as never,
 			parseConfig({ apiKey: "test-key", allowedAgents: ["navi"] }),
-			() => "agent:heimerdinger:main",
 		)
 
 		await handler(
@@ -37,7 +36,6 @@ describe("allowedAgents config", () => {
 		const handler = buildCaptureHandler(
 			{ addMemory } as never,
 			parseConfig({ apiKey: "test-key", allowedAgents: ["navi"] }),
-			() => undefined,
 		)
 
 		await handler(

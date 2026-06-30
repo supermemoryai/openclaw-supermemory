@@ -44,7 +44,6 @@ export function buildCaptureHandler(
 			return
 		}
 
-
 		log.info(
 			`agent_end fired: provider="${ctx.messageProvider}" success=${event.success}`,
 		)
