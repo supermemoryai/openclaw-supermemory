@@ -115,7 +115,7 @@ export function buildCaptureHandler(
 		try {
 			await client.addMemory(
 				content,
-				{ source: "openclaw", timestamp: new Date().toISOString() },
+				{ source: "openclaw" },
 				customId,
 				undefined,
 				cfg.entityContext,

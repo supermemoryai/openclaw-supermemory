@@ -1,4 +1,5 @@
 import Supermemory from "supermemory"
+import { buildAddMemoryMetadata } from "./lib/add-metadata.ts"
 import {
 	sanitizeContent,
 	validateApiKeyFormat,
@@ -72,14 +73,10 @@ export class SupermemoryClient {
 		const cleaned = sanitizeContent(content)
 		const tag = containerTag ?? this.containerTag
 
-		// Always stamp `sm_source` so mono's `document.source` column attributes
-		// these writes to the OpenClaw plugin. Existing callers can still pass
-		// extra metadata (e.g. `source: "openclaw_tool"`) and it is preserved
-		// underneath the canonical `sm_source` key.
-		const mergedMetadata: Record<string, string | number | boolean> = {
-			sm_source: "openclaw",
-			...(metadata ?? {}),
-		}
+		// Always stamp `sm_source` + `captured_at` so mono can attribute the write
+		// and extraction has a real capture-time anchor (issue #61). Callers may
+		// still pass extra keys; an explicit `captured_at` / legacy `timestamp` wins.
+		const mergedMetadata = buildAddMemoryMetadata(metadata)
 
 		log.debugRequest("add", {
 			contentLength: cleaned.length,

@@ -22,6 +22,7 @@
 		"runtime.ts",
 		"types",
 		"lib/version-check.ts",
+		"lib/add-metadata.ts",
 		"lib/validate.d.ts",
 		"lib/validate.js",
 		"dist"
@@ -32,6 +33,7 @@
 		"check-types": "tsc --noEmit",
 		"lint": "bunx @biomejs/biome ci .",
 		"lint:fix": "bunx @biomejs/biome check --write .",
+		"test": "bun test",
 		"build:lib": "node -e \"const fs=require('node:fs'); fs.accessSync('lib/validate.js'); fs.accessSync('lib/validate.d.ts')\"",
 		"prepack": "npm run build"
 	},
