@@ -1,5 +1,4 @@
 import Supermemory from "supermemory"
-import { buildAddMemoryMetadata } from "./lib/add-metadata.ts"
 import {
 	sanitizeContent,
 	validateApiKeyFormat,
@@ -7,6 +6,7 @@ import {
 } from "./lib/validate.js"
 import { log } from "./logger.ts"
 import { clampEntityContext } from "./memory.ts"
+import { buildAddMemoryMetadata } from "./metadata.ts"
 
 export type SearchResult = {
 	id: string
@@ -73,9 +73,6 @@ export class SupermemoryClient {
 		const cleaned = sanitizeContent(content)
 		const tag = containerTag ?? this.containerTag
 
-		// Always stamp `sm_source` + `captured_at` so mono can attribute the write
-		// and extraction has a real capture-time anchor (issue #61). Callers may
-		// still pass extra keys; an explicit `captured_at` / legacy `timestamp` wins.
 		const mergedMetadata = buildAddMemoryMetadata(metadata)
 
 		log.debugRequest("add", {

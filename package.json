@@ -19,10 +19,10 @@
 		"config.ts",
 		"logger.ts",
 		"memory.ts",
+		"metadata.ts",
 		"runtime.ts",
 		"types",
 		"lib/version-check.ts",
-		"lib/add-metadata.ts",
 		"lib/validate.d.ts",
 		"lib/validate.js",
 		"dist"
