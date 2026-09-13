@@ -19,6 +19,7 @@
 		"config.ts",
 		"logger.ts",
 		"memory.ts",
+		"metadata.ts",
 		"runtime.ts",
 		"types",
 		"lib/version-check.ts",
@@ -32,6 +33,7 @@
 		"check-types": "tsc --noEmit",
 		"lint": "bunx @biomejs/biome ci .",
 		"lint:fix": "bunx @biomejs/biome check --write .",
+		"test": "bun test",
 		"build:lib": "node -e \"const fs=require('node:fs'); fs.accessSync('lib/validate.js'); fs.accessSync('lib/validate.d.ts')\"",
 		"prepack": "npm run build"
 	},
