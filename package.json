@@ -1,65 +1,65 @@
 {
-  "name": "@supermemory/openclaw-supermemory",
-  "version": "2.1.18",
-  "type": "module",
-  "description": "OpenClaw Supermemory memory plugin",
-  "license": "MIT",
-  "dependencies": {
-    "supermemory": "^4.0.0",
-    "@sinclair/typebox": "0.34.47"
-  },
-  "files": [
-    "README.md",
-    "openclaw.plugin.json",
-    "index.ts",
-    "client.ts",
-    "commands",
-    "hooks",
-    "skills",
-    "tools",
-    "config.ts",
-    "logger.ts",
-    "memory.ts",
-    "runtime.ts",
-    "types",
-    "lib/version-check.ts",
-    "lib/validate.d.ts",
-    "lib/validate.js",
-    "dist"
-  ],
-  "scripts": {
-    "build": "npm run build:runtime && npm run build:lib",
-    "build:runtime": "esbuild index.ts --bundle --format=esm --platform=node --target=es2022 --external:openclaw --external:openclaw/* --external:supermemory --outfile=dist/index.js",
-    "check-types": "tsc --noEmit",
-    "lint": "bunx @biomejs/biome ci .",
-    "lint:fix": "bunx @biomejs/biome check --write .",
-    "build:lib": "node -e \"const fs=require('node:fs'); fs.accessSync('lib/validate.js'); fs.accessSync('lib/validate.d.ts')\"",
-    "prepack": "npm run build"
-  },
-  "peerDependencies": {
-    "openclaw": ">=2026.5.7"
-  },
-  "openclaw": {
-    "extensions": [
-      "./index.ts"
-    ],
-    "runtimeExtensions": [
-      "./dist/index.js"
-    ],
-    "compat": {
-      "pluginApi": ">=2026.5.7",
-      "minGatewayVersion": "2026.5.7"
-    },
-    "build": {
-      "openclawVersion": "2026.5.7"
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/supermemoryai/openclaw-supermemory.git"
-  },
-  "devDependencies": {
-    "esbuild": "^0.27.2",
-    "typescript": "^5.9.3"
-  }
+	"name": "@supermemory/openclaw-supermemory",
+	"version": "2.1.18",
+	"type": "module",
+	"description": "OpenClaw Supermemory memory plugin",
+	"license": "MIT",
+	"dependencies": {
+		"supermemory": "^4.0.0",
+		"@sinclair/typebox": "0.34.47"
+	},
+	"files": [
+		"README.md",
+		"openclaw.plugin.json",
+		"index.ts",
+		"client.ts",
+		"commands",
+		"hooks",
+		"skills",
+		"tools",
+		"config.ts",
+		"logger.ts",
+		"memory.ts",
+		"runtime.ts",
+		"types",
+		"lib/version-check.ts",
+		"lib/validate.d.ts",
+		"lib/validate.js",
+		"dist"
+	],
+	"scripts": {
+		"build": "npm run build:runtime && npm run build:lib",
+		"build:runtime": "esbuild index.ts --bundle --format=esm --platform=node --target=es2022 --external:openclaw --external:openclaw/* --external:supermemory --outfile=dist/index.js",
+		"check-types": "tsc --noEmit",
+		"lint": "bunx @biomejs/biome ci .",
+		"lint:fix": "bunx @biomejs/biome check --write .",
+		"build:lib": "node -e \"const fs=require('node:fs'); fs.accessSync('lib/validate.js'); fs.accessSync('lib/validate.d.ts')\"",
+		"prepack": "npm run build"
+	},
+	"peerDependencies": {
+		"openclaw": ">=2026.5.7"
+	},
+	"openclaw": {
+		"extensions": [
+			"./index.ts"
+		],
+		"runtimeExtensions": [
+			"./dist/index.js"
+		],
+		"compat": {
+			"pluginApi": ">=2026.5.7",
+			"minGatewayVersion": "2026.5.7"
+		},
+		"build": {
+			"openclawVersion": "2026.5.7"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/supermemoryai/openclaw-supermemory.git"
+	},
+	"devDependencies": {
+		"esbuild": "^0.27.2",
+		"typescript": "^5.9.3"
+	}
 }
