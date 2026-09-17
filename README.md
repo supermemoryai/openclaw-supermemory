@@ -42,10 +42,11 @@ Everything runs in the cloud. Supermemory handles extraction, deduplication, and
 
 ## Slash Commands
 
-| Command            | Description                             |
-| ------------------ | --------------------------------------- |
-| `/remember <text>` | Manually save something to memory.      |
-| `/recall <query>`  | Search memories with similarity scores. |
+| Command              | Description                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------- |
+| `/remember <text>`   | Manually save something to memory. Stores the given text immediately.                                |
+| `/recall <query>`    | Search memories with similarity scores.                                                              |
+| `/supermemory-index` | Index the current project into memory. Agent skill: explores the codebase, then saves focused memories (unlike `/remember`). |
 
 ## AI Tools
 

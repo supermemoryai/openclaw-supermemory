@@ -15,6 +15,7 @@
 		"client.ts",
 		"commands",
 		"hooks",
+		"skills",
 		"tools",
 		"config.ts",
 		"logger.ts",
