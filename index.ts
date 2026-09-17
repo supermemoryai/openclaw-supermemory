@@ -16,7 +16,7 @@ import { registerProfileTool } from "./tools/profile.ts"
 import { registerSearchTool } from "./tools/search.ts"
 import { registerStoreTool } from "./tools/store.ts"
 
-const PLUGIN_VERSION = "2.1.14"
+const PLUGIN_VERSION = "2.1.18"
 const UPDATE_COMMAND =
 	"openclaw plugins install @supermemory/openclaw-supermemory"
 
