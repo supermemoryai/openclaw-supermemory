@@ -138,6 +138,7 @@ export function buildPromptSection(params: {
 	if (storeTool) {
 		lines.push(
 			`Use ${storeTool} to save important information the user asks you to remember.`,
+			"The user can run /supermemory-index (or the supermemory-index skill) to index a project.",
 		)
 	}
 

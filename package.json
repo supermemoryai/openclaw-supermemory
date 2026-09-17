@@ -1,6 +1,6 @@
 {
 	"name": "@supermemory/openclaw-supermemory",
-	"version": "2.1.17",
+	"version": "2.1.18",
 	"type": "module",
 	"description": "OpenClaw Supermemory memory plugin",
 	"license": "MIT",
@@ -15,6 +15,7 @@
 		"client.ts",
 		"commands",
 		"hooks",
+		"skills",
 		"tools",
 		"config.ts",
 		"logger.ts",
