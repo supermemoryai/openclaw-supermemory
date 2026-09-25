@@ -6,6 +6,7 @@ import {
 } from "./lib/validate.js"
 import { log } from "./logger.ts"
 import { clampEntityContext } from "./memory.ts"
+import { buildAddMemoryMetadata } from "./metadata.ts"
 
 export type SearchResult = {
 	id: string
@@ -72,14 +73,7 @@ export class SupermemoryClient {
 		const cleaned = sanitizeContent(content)
 		const tag = containerTag ?? this.containerTag
 
-		// Always stamp `sm_source` so mono's `document.source` column attributes
-		// these writes to the OpenClaw plugin. Existing callers can still pass
-		// extra metadata (e.g. `source: "openclaw_tool"`) and it is preserved
-		// underneath the canonical `sm_source` key.
-		const mergedMetadata: Record<string, string | number | boolean> = {
-			sm_source: "openclaw",
-			...(metadata ?? {}),
-		}
+		const mergedMetadata = buildAddMemoryMetadata(metadata)
 
 		log.debugRequest("add", {
 			contentLength: cleaned.length,
