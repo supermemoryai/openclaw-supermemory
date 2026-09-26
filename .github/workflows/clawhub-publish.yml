@@ -1,0 +1,64 @@
+name: Publish to ClawHub
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Validate the package without publishing a release
+        type: boolean
+        default: true
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: clawhub-publish
+  cancel-in-progress: false
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.2.17"
+      - run: bun install --frozen-lockfile
+      - run: bun run check-types
+
+      - run: bun run build
+      - name: Pack the built plugin
+        run: |
+          mkdir -p "$RUNNER_TEMP/clawhub-package"
+          npm pack --ignore-scripts --pack-destination "$RUNNER_TEMP/clawhub-package"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clawhub-package
+          path: ${{ runner.temp }}/clawhub-package/*.tgz
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    if: github.event_name == 'workflow_dispatch'
+    needs: package
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    # ClawHub v0.23.3, pinned so publishing tooling cannot change between runs.
+    uses: openclaw/clawhub/.github/workflows/package-publish.yml@87ca030c30f3cfb78ab15c8e66b5ff1469c8f9c8
+    with:
+      dry_run: ${{ inputs.dry_run }}
+      family: code-plugin
+      package_artifact_name: clawhub-package
+      wait_for_publication: true
+    secrets:
+      clawhub_token: ${{ secrets.CLAWHUB_TOKEN }}

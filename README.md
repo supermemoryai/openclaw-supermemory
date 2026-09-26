@@ -141,3 +141,43 @@ Or configure in `~/.openclaw/openclaw.json`:
   }
 }
 ```
+
+## Publishing to ClawHub
+
+The **Publish to ClawHub** Actions workflow builds and packs the plugin, then
+runs ClawHub's pinned reusable publishing workflow. Run it on the release tag
+or branch you intend to publish. `dry_run` defaults to `true`: validation runs,
+but no ClawHub release is created. Pull requests only run the build-and-pack job;
+the publish job runs only on manual dispatch. Publishing to npm remains separate.
+
+Before the first live publication:
+
+1. Sign in to [ClawHub](https://clawhub.ai) with your company GitHub account and
+   confirm you have publishing access to the `@supermemory` organization. The
+   package scope must belong to that company-controlled publisher.
+2. Create a ClawHub API token as a member of that publisher and save it in this
+   GitHub repository as the Actions secret `CLAWHUB_TOKEN`. Never commit the token.
+3. Run **Publish to ClawHub** with `dry_run: true` and review its inspector report
+   and package artifact. Then run it with `dry_run: false` to publish the version
+   from `package.json`. A new release needs a new package version. The workflow
+   waits for ClawHub's security checks and publication result.
+
+After the first publication, a package manager can configure trusted publishing:
+
+```bash
+clawhub package trusted-publisher set @supermemory/openclaw-supermemory \
+  --repository supermemoryai/openclaw-supermemory \
+  --workflow-filename clawhub-publish.yml
+```
+
+Once configured, remove `CLAWHUB_TOKEN` from the repository to use GitHub OIDC
+for subsequent manual workflow runs. The workflow intentionally passes no owner
+override: first publication resolves the package scope; trusted publication uses
+the existing package owner. Dry runs need neither a ClawHub account nor that secret.
+
+Publisher creation and successful publication do not grant an official badge.
+Please email **patrick@openclaw.org** to discuss company verification and making
+the Supermemory organization official on ClawHub.
+
+See [ClawHub publishing documentation](https://github.com/openclaw/clawhub/blob/main/docs/publishing.md#trusted-publishing-for-packages)
+for onboarding and trusted publishing details.
