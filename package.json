@@ -1,15 +1,17 @@
 {
 	"name": "@supermemory/openclaw-supermemory",
-	"version": "2.1.18",
+	"version": "2.1.19",
 	"type": "module",
 	"description": "OpenClaw Supermemory memory plugin",
 	"license": "MIT",
 	"dependencies": {
-		"supermemory": "^4.0.0",
+		"supermemory": "5.0.1",
+		"supermemory-legacy": "npm:supermemory@4.15.0",
 		"@sinclair/typebox": "0.34.47"
 	},
 	"files": [
 		"README.md",
+		"CHANGELOG.md",
 		"openclaw.plugin.json",
 		"index.ts",
 		"client.ts",
@@ -29,7 +31,7 @@
 	],
 	"scripts": {
 		"build": "npm run build:runtime && npm run build:lib",
-		"build:runtime": "esbuild index.ts --bundle --format=esm --platform=node --target=es2022 --external:openclaw --external:openclaw/* --external:supermemory --outfile=dist/index.js",
+		"build:runtime": "esbuild index.ts --bundle --format=esm --platform=node --target=es2022 --external:openclaw --external:openclaw/* --external:supermemory --external:supermemory-legacy --outfile=dist/index.js",
 		"check-types": "tsc --noEmit",
 		"lint": "bunx @biomejs/biome ci .",
 		"lint:fix": "bunx @biomejs/biome check --write .",

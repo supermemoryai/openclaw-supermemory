@@ -93,6 +93,7 @@ Or configure in `~/.openclaw/openclaw.json`:
 | ----------------------------- | --------- | --------------------- | --------------------------------------------------------- |
 | `apiKey`                      | `string`  | —                       | Supermemory API key.                                      |
 | `baseUrl`                     | `string`  | `https://api.supermemory.ai` | API endpoint. Set to a self-hosted / local URL to point at your own instance; leave blank for the cloud. |
+| `apiVersion`                  | `"v5" \| "legacy"` | Auto-selected | Protocol override. The hosted root URL uses v5; custom endpoints default to legacy. |
 | `containerTag`                | `string`  | `openclaw_{hostname}` | Root memory namespace.                                    |
 | `autoRecall`                  | `boolean` | `true`                | Inject relevant memories before every AI turn.            |
 | `autoCapture`                 | `boolean` | `true`                | Store conversations after every turn.                     |
