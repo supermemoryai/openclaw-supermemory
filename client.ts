@@ -263,8 +263,15 @@ export class SupermemoryClient {
 			)
 			if (
 				response.count !== 1 ||
+				!Array.isArray(response.errors) ||
 				response.errors.length !== 0 ||
+				!Array.isArray(response.matches) ||
 				response.matches.length !== 1 ||
+				!response.matches[0] ||
+				typeof response.matches[0] !== "object" ||
+				typeof response.matches[0].id !== "string" ||
+				!response.matches[0].id.trim() ||
+				typeof response.matches[0].memory !== "string" ||
 				response.matches[0].id !== id
 			) {
 				throw new Error("Memory forget did not confirm the requested ID")
@@ -298,6 +305,8 @@ export class SupermemoryClient {
 		log.debugRequest("wipe", { containerTag: this.containerTag })
 
 		const allIds: string[] = []
+		const uniqueIds = new Set<string>()
+		let totalItems: number | undefined
 		let page = 1
 
 		while (true) {
@@ -319,19 +328,47 @@ export class SupermemoryClient {
 			const documents =
 				"documents" in response ? response.documents : response.memories
 			if ("documents" in response) {
+				const pagination = response.pagination
+				const limit = 100
 				if (
 					!Array.isArray(documents) ||
-					!response.pagination ||
-					response.pagination.currentPage !== page ||
-					!Number.isInteger(response.pagination.totalPages) ||
-					response.pagination.totalPages < 0 ||
-					(documents.length > 0 && response.pagination.totalPages < page) ||
-					(documents.length === 0 && response.pagination.totalItems !== 0) ||
-					documents.some((doc) => typeof doc.id !== "string" || !doc.id.trim())
+					!pagination ||
+					pagination.currentPage !== page ||
+					(pagination.limit !== undefined && pagination.limit !== limit) ||
+					!Number.isSafeInteger(pagination.totalItems) ||
+					pagination.totalItems < 0 ||
+					!Number.isSafeInteger(pagination.totalPages) ||
+					pagination.totalPages < 0 ||
+					(pagination.totalItems === 0
+						? pagination.totalPages > 1
+						: pagination.totalPages !==
+							Math.ceil(pagination.totalItems / limit)) ||
+					documents.length !==
+						Math.min(
+							limit,
+							Math.max(0, pagination.totalItems - (page - 1) * limit),
+						) ||
+					(totalItems !== undefined && pagination.totalItems !== totalItems) ||
+					documents.some(
+						(doc) =>
+							!doc ||
+							typeof doc !== "object" ||
+							typeof doc.id !== "string" ||
+							!doc.id.trim(),
+					)
 				) {
 					throw new Error(
 						"Document list did not return a valid page; wipe stopped",
 					)
+				}
+				totalItems = pagination.totalItems
+				for (const doc of documents) {
+					if (uniqueIds.has(doc.id)) {
+						throw new Error(
+							"Document list returned duplicate IDs; wipe stopped",
+						)
+					}
+					uniqueIds.add(doc.id)
 				}
 			}
 			if (!documents || documents.length === 0) break
@@ -346,6 +383,9 @@ export class SupermemoryClient {
 			)
 				break
 			page++
+		}
+		if (!this.legacy && uniqueIds.size !== totalItems) {
+			throw new Error("Document list was incomplete; wipe stopped")
 		}
 
 		if (allIds.length === 0) {
