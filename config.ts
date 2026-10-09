@@ -2,6 +2,7 @@ import { hostname } from "node:os"
 import { DEFAULT_ENTITY_CONTEXT } from "./memory.ts"
 
 export type CaptureMode = "everything" | "all"
+export type ApiVersion = "v5" | "legacy"
 
 export type CustomContainer = {
 	tag: string
@@ -11,6 +12,7 @@ export type CustomContainer = {
 export type SupermemoryConfig = {
 	apiKey: string | undefined
 	baseUrl: string
+	apiVersion?: ApiVersion
 	containerTag: string
 	autoRecall: boolean
 	autoCapture: boolean
@@ -28,6 +30,7 @@ export type SupermemoryConfig = {
 const ALLOWED_KEYS = [
 	"apiKey",
 	"baseUrl",
+	"apiVersion",
 	"containerTag",
 	"autoRecall",
 	"autoCapture",
@@ -64,6 +67,23 @@ function resolveEnvVars(value: string): string {
 }
 
 export const DEFAULT_BASE_URL = "https://api.supermemory.ai"
+
+export function resolveApiVersion(raw: unknown, baseUrl: string): ApiVersion {
+	const explicit = raw ?? process.env.SUPERMEMORY_API_VERSION
+	if (explicit !== undefined) {
+		if (explicit === "v5" || explicit === "legacy") return explicit
+		throw new Error('apiVersion must be "v5" or "legacy"')
+	}
+	const url = new URL(baseUrl)
+	return url.origin === DEFAULT_BASE_URL &&
+		url.pathname === "/" &&
+		!url.search &&
+		!url.hash &&
+		!url.username &&
+		!url.password
+		? "v5"
+		: "legacy"
+}
 
 // Resolve the API endpoint. Precedence: explicit config `baseUrl` (supports
 // `${ENV}` interpolation) > SUPERMEMORY_BASE_URL env var > the Supermemory
@@ -142,9 +162,11 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 		}
 	}
 
+	const baseUrl = resolveBaseUrl(cfg.baseUrl)
 	return {
 		apiKey,
-		baseUrl: resolveBaseUrl(cfg.baseUrl),
+		baseUrl,
+		apiVersion: resolveApiVersion(cfg.apiVersion, baseUrl),
 		containerTag: cfg.containerTag
 			? sanitizeTag(cfg.containerTag as string)
 			: defaultContainerTag(),
@@ -179,6 +201,7 @@ export const supermemoryConfigSchema = {
 		properties: {
 			apiKey: { type: "string" },
 			baseUrl: { type: "string" },
+			apiVersion: { type: "string", enum: ["v5", "legacy"] },
 			containerTag: { type: "string" },
 			autoRecall: { type: "boolean" },
 			autoCapture: { type: "boolean" },

@@ -6,7 +6,8 @@
       "name": "@supermemory/openclaw-supermemory",
       "dependencies": {
         "@sinclair/typebox": "0.34.47",
-        "supermemory": "^4.0.0",
+        "supermemory": "5.0.1",
+        "supermemory-legacy": "npm:supermemory@4.15.0",
       },
       "devDependencies": {
         "esbuild": "^0.27.2",
@@ -970,7 +971,9 @@
 
     "strtok3": ["strtok3@10.3.5", "", { "dependencies": { "@tokenizer/token": "^0.3.0" } }, "sha512-ki4hZQfh5rX0QDLLkOCj+h+CVNkqmp/CMf8v8kZpkNVK6jGQooMytqzLZYUVYIZcFZ6yDB70EfD8POcFXiF5oA=="],
 
-    "supermemory": ["supermemory@4.15.0", "", {}, "sha512-FNBBOEi1HMvbBecXC6gn84nGy7ZEdFW5kLv7VlWirHDPEM08omBBBHQ7H2cwBIGWUenBMDaao3kPKe9W6Ki+UQ=="],
+    "supermemory": ["supermemory@5.0.1", "", { "bin": { "supermemory": "bin/cli.mjs" } }, "sha512-XCgFEioj4PGREU/J3pOK7L4U/akZroPR6XCDK6/pxGrrJa28gH1kNPB/Cxhq6nVL3fwxdhwciyPbRImaDzq8/Q=="],
+
+    "supermemory-legacy": ["supermemory@4.15.0", "", {}, "sha512-FNBBOEi1HMvbBecXC6gn84nGy7ZEdFW5kLv7VlWirHDPEM08omBBBHQ7H2cwBIGWUenBMDaao3kPKe9W6Ki+UQ=="],
 
     "supports-color": ["supports-color@7.2.0", "", { "dependencies": { "has-flag": "^4.0.0" } }, "sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw=="],
 

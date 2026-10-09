@@ -33,6 +33,11 @@
 			"help": "API endpoint. Defaults to Supermemory production (https://api.supermemory.ai). Set to a self-hosted / local URL (e.g. http://localhost:8000) to point at your own instance. Leave blank for the cloud.",
 			"advanced": true
 		},
+		"apiVersion": {
+			"label": "API Version",
+			"help": "Protocol override: v5 or legacy. Hosted defaults to v5; custom servers default to legacy.",
+			"advanced": true
+		},
 		"containerTag": {
 			"label": "Container Tag",
 			"placeholder": "openclaw_myhostname",
@@ -102,6 +107,7 @@
 		"properties": {
 			"apiKey": { "type": "string" },
 			"baseUrl": { "type": "string" },
+			"apiVersion": { "type": "string", "enum": ["v5", "legacy"] },
 			"containerTag": { "type": "string" },
 			"autoRecall": { "type": "boolean" },
 			"autoCapture": { "type": "boolean" },
