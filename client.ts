@@ -1,5 +1,6 @@
 import { type RequestOptions, Supermemory } from "supermemory"
 import LegacySupermemory from "supermemory-legacy"
+import { createAuthenticatedFetch, type OAuthConfig } from "./auth.ts"
 import { type ApiVersion, resolveApiVersion, resolveBaseUrl } from "./config.ts"
 import {
 	sanitizeContent,
@@ -41,14 +42,19 @@ export class SupermemoryClient {
 	private containerTag: string
 
 	constructor(
-		apiKey: string,
+		auth: string | OAuthConfig,
 		containerTag: string,
 		baseUrl?: string,
 		apiVersion?: ApiVersion,
 	) {
-		const keyCheck = validateApiKeyFormat(apiKey)
-		if (!keyCheck.valid) {
-			throw new Error(`invalid API key: ${keyCheck.reason}`)
+		const oauthFetch =
+			typeof auth === "string" ? undefined : createAuthenticatedFetch(auth)
+		const apiKey = typeof auth === "string" ? auth : "oauth"
+		if (!oauthFetch) {
+			const keyCheck = validateApiKeyFormat(apiKey)
+			if (!keyCheck.valid) {
+				throw new Error(`invalid API key: ${keyCheck.reason}`)
+			}
 		}
 
 		const tagCheck = validateContainerTag(containerTag)
@@ -64,6 +70,7 @@ export class SupermemoryClient {
 			headers: { "x-sm-source": "openclaw" },
 			timeoutInSeconds: 60,
 			maxRetries: 2,
+			...(oauthFetch && { fetch: oauthFetch }),
 		})
 		if (version === "legacy") {
 			this.legacy = new LegacySupermemory({
@@ -72,11 +79,12 @@ export class SupermemoryClient {
 				defaultHeaders: { "x-sm-source": "openclaw" },
 				timeout: 60_000,
 				maxRetries: 2,
+				...(oauthFetch && { fetch: oauthFetch }),
 			})
 		}
 		this.containerTag = containerTag
 		log.info(
-			`initialized (container: ${containerTag}, endpoint: ${new URL(endpoint).origin}, API: ${version})`,
+			`initialized (container: ${containerTag}, endpoint: ${new URL(endpoint).origin}, API: ${version}, auth: ${oauthFetch ? "OAuth" : "API key"})`,
 		)
 	}
 

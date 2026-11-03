@@ -6,42 +6,13 @@ import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
 import type { SupermemoryClient } from "../client.ts"
 import { DEFAULT_BASE_URL } from "../config.ts"
 import { log } from "../logger.ts"
-
-// Hyphenated names are current; snake_case is deprecated and removed in 3.0.
-const SUPERMEMORY_TOOL_NAMES = [
-	"supermemory-save",
-	"supermemory-search",
-	"supermemory-forget",
-	"supermemory-profile",
-	"supermemory_store",
-	"supermemory_search",
-	"supermemory_forget",
-	"supermemory_profile",
-]
-
-function appendUniqueStrings(value: unknown, entries: string[]): string[] {
-	const current = Array.isArray(value)
-		? value.filter((item): item is string => typeof item === "string")
-		: []
-	return Array.from(new Set([...current, ...entries]))
-}
-
-function ensureSupermemoryToolsAllowed(config: Record<string, unknown>): void {
-	if (
-		!config.tools ||
-		typeof config.tools !== "object" ||
-		Array.isArray(config.tools)
-	) {
-		config.tools = {}
-	}
-
-	const tools = config.tools as Record<string, unknown>
-	tools.alsoAllow = appendUniqueStrings(tools.alsoAllow, SUPERMEMORY_TOOL_NAMES)
-
-	if (Array.isArray(tools.allow)) {
-		tools.allow = appendUniqueStrings(tools.allow, SUPERMEMORY_TOOL_NAMES)
-	}
-}
+import {
+	describeAuth,
+	ensureSupermemoryToolsAllowed,
+	login,
+	logout,
+	readPluginConfig,
+} from "./login.ts"
 
 export function registerCli(
 	api: OpenClawPluginApi,
@@ -53,6 +24,26 @@ export function registerCli(
 			const cmd = program
 				.command("supermemory")
 				.description("Supermemory long-term memory commands")
+
+			cmd
+				.command("login")
+				.description("Sign in to Supermemory with your browser (OAuth)")
+				.option(
+					"--print-url",
+					"Print the sign-in link instead of opening a browser",
+				)
+				.action(async (opts: { printUrl?: boolean }) => {
+					process.exitCode = await login(readPluginConfig(), {
+						printUrl: !!opts.printUrl,
+					})
+				})
+
+			cmd
+				.command("logout")
+				.description("Revoke and remove the saved Supermemory sign-in")
+				.action(async () => {
+					process.exitCode = await logout(readPluginConfig())
+				})
 
 			cmd
 				.command("setup")
@@ -433,20 +424,12 @@ export function registerCli(
 						".openclaw",
 						"openclaw.json",
 					)
-					const envKey = process.env.SUPERMEMORY_OPENCLAW_API_KEY
 					const defaultTag = `openclaw_${os.hostname().replace(/[^a-zA-Z0-9_]/g, "_")}`
 
 					console.log("\n🧠 Supermemory Status\n")
 
-					let apiKeySource = ""
-					let apiKeyDisplay = ""
 					let pluginConfig: Record<string, unknown> = {}
 					let enabled = true
-
-					if (envKey) {
-						apiKeySource = "environment"
-						apiKeyDisplay = `${envKey.slice(0, 8)}...${envKey.slice(-4)}`
-					}
 
 					if (fs.existsSync(configPath)) {
 						try {
@@ -455,11 +438,6 @@ export function registerCli(
 							if (entry) {
 								enabled = entry.enabled ?? true
 								pluginConfig = entry.config ?? {}
-								if (pluginConfig.apiKey && !envKey) {
-									const key = pluginConfig.apiKey as string
-									apiKeySource = "config"
-									apiKeyDisplay = `${key.slice(0, 8)}...${key.slice(-4)}`
-								}
 							}
 						} catch {
 							console.log("✗ Could not read config file\n")
@@ -467,9 +445,10 @@ export function registerCli(
 						}
 					}
 
-					if (!apiKeyDisplay) {
-						console.log("✗ No API key configured")
-						console.log("  Run: openclaw supermemory setup\n")
+					const auth = await describeAuth(pluginConfig)
+					for (const line of auth.lines) console.log(line)
+					if (!auth.configured) {
+						console.log("")
 						return
 					}
 
@@ -477,9 +456,6 @@ export function registerCli(
 						? pluginConfig.customContainers
 						: []
 
-					console.log(
-						`✓ API key:         ${apiKeyDisplay} (from ${apiKeySource})`,
-					)
 					console.log(`  Enabled:          ${enabled}`)
 					console.log(
 						`  Container tag:    ${pluginConfig.containerTag ?? defaultTag}`,

@@ -114,6 +114,18 @@ export function resolveBaseUrl(raw: unknown): string {
 	}
 }
 
+export function resolveApiKey(
+	cfg: Record<string, unknown>,
+): string | undefined {
+	try {
+		return typeof cfg.apiKey === "string" && cfg.apiKey.length > 0
+			? resolveEnvVars(cfg.apiKey)
+			: process.env.SUPERMEMORY_OPENCLAW_API_KEY || undefined
+	} catch {
+		return undefined
+	}
+}
+
 function sanitizeTag(raw: string): string {
 	return raw
 		.replace(/[^a-zA-Z0-9_]/g, "_")
@@ -135,15 +147,7 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 		assertAllowedKeys(cfg, ALLOWED_KEYS, "supermemory config")
 	}
 
-	let apiKey: string | undefined
-	try {
-		apiKey =
-			typeof cfg.apiKey === "string" && cfg.apiKey.length > 0
-				? resolveEnvVars(cfg.apiKey)
-				: process.env.SUPERMEMORY_OPENCLAW_API_KEY
-	} catch {
-		apiKey = undefined
-	}
+	const apiKey = resolveApiKey(cfg)
 
 	const customContainers: CustomContainer[] = []
 	if (Array.isArray(cfg.customContainers)) {

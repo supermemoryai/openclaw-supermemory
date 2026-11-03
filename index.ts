@@ -2,6 +2,7 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk"
+import { resolveOAuthConfig } from "./auth.ts"
 import { SupermemoryClient } from "./client.ts"
 import { registerCli } from "./commands/cli.ts"
 import { registerCommands, registerStubCommands } from "./commands/slash.ts"
@@ -15,8 +16,8 @@ import { registerForgetTool } from "./tools/forget.ts"
 import { registerProfileTool } from "./tools/profile.ts"
 import { registerSearchTool } from "./tools/search.ts"
 import { registerStoreTool } from "./tools/store.ts"
+import { PLUGIN_VERSION } from "./version.ts"
 
-const PLUGIN_VERSION = "2.1.19"
 const UPDATE_COMMAND =
 	"openclaw plugins install @supermemory/openclaw-supermemory"
 
@@ -42,17 +43,18 @@ export default {
 
 		initLogger(api.logger, cfg.debug)
 
-		if (!cfg.apiKey) {
+		const auth = cfg.apiKey ?? resolveOAuthConfig(cfg.baseUrl)
+		if (!auth) {
 			registerCli(api)
 			api.logger.info(
-				"supermemory: not configured - run 'openclaw supermemory setup'",
+				"supermemory: not configured - run 'openclaw supermemory login'",
 			)
 			registerStubCommands(api)
 			return
 		}
 
 		const client = new SupermemoryClient(
-			cfg.apiKey,
+			auth,
 			cfg.containerTag,
 			cfg.baseUrl,
 			cfg.apiVersion,
