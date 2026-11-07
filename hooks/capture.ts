@@ -2,7 +2,7 @@ import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 import { buildDocumentId, stripInboundMetadata } from "../memory.ts"
-import { isInteractiveTrigger } from "./trigger.ts"
+import { isInteractiveTrigger, skippedSessionReason } from "./trigger.ts"
 
 const SKIPPED_PROVIDERS = ["exec-event", "cron-event", "heartbeat"]
 
@@ -52,6 +52,17 @@ export function buildCaptureHandler(
 			return
 
 		const lastTurn = getLastTurn(event.messages)
+
+		const lastUser = lastTurn[0] as Record<string, unknown> | undefined
+		const skipped = skippedSessionReason(
+			cfg,
+			ctx,
+			lastUser?.provenance ?? ctx.inputProvenance,
+		)
+		if (skipped) {
+			log.debug(`capture skipped for ${skipped} session ${ctx.sessionKey}`)
+			return
+		}
 
 		const texts: string[] = []
 		for (const msg of lastTurn) {

@@ -99,6 +99,16 @@
 			"label": "Container Instructions",
 			"help": "Instructions for AI on how to route memories to custom containers",
 			"advanced": true
+		},
+		"captureSubagents": {
+			"label": "Capture Subagents",
+			"help": "Also recall and capture in subagent sessions and OpenClaw helper runs (off by default). Env: SUPERMEMORY_CAPTURE_SUBAGENTS=true",
+			"advanced": true
+		},
+		"captureHeadless": {
+			"label": "Capture Headless Runs",
+			"help": "Also recall and capture in headless runs such as openclaw agent exec (off by default). Env: SUPERMEMORY_CAPTURE_HEADLESS=true",
+			"advanced": true
 		}
 	},
 	"configSchema": {
@@ -129,7 +139,9 @@
 					"required": ["tag", "description"]
 				}
 			},
-			"customContainerInstructions": { "type": "string" }
+			"customContainerInstructions": { "type": "string" },
+			"captureSubagents": { "type": "boolean" },
+			"captureHeadless": { "type": "boolean" }
 		},
 		"required": []
 	}

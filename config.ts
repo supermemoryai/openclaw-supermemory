@@ -25,6 +25,8 @@ export type SupermemoryConfig = {
 	enableCustomContainerTags: boolean
 	customContainers: CustomContainer[]
 	customContainerInstructions: string
+	captureSubagents: boolean
+	captureHeadless: boolean
 }
 
 const ALLOWED_KEYS = [
@@ -43,6 +45,8 @@ const ALLOWED_KEYS = [
 	"enableCustomContainerTags",
 	"customContainers",
 	"customContainerInstructions",
+	"captureSubagents",
+	"captureHeadless",
 ]
 
 function assertAllowedKeys(
@@ -191,6 +195,12 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 			typeof cfg.customContainerInstructions === "string"
 				? cfg.customContainerInstructions
 				: "",
+		captureSubagents:
+			cfg.captureSubagents === true ||
+			process.env.SUPERMEMORY_CAPTURE_SUBAGENTS === "true",
+		captureHeadless:
+			cfg.captureHeadless === true ||
+			process.env.SUPERMEMORY_CAPTURE_HEADLESS === "true",
 	}
 }
 
@@ -224,6 +234,8 @@ export const supermemoryConfigSchema = {
 				},
 			},
 			customContainerInstructions: { type: "string" },
+			captureSubagents: { type: "boolean" },
+			captureHeadless: { type: "boolean" },
 		},
 	},
 	parse: parseConfig,
