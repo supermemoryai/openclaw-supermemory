@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.2.0
+
+- Sign in with Supermemory OAuth: `openclaw supermemory login` (or `npx -y @supermemory/openclaw-supermemory login`) runs an authorization-code + PKCE flow on a 127.0.0.1:19883 loopback callback and enables the plugin in `~/.openclaw/openclaw.json`. Credentials live in `~/.supermemory-openclaw/credentials.json` (0600), refresh before expiry and after a 401, and a rejected refresh token asks you to sign in again.
+- Headless machines get the sign-in link printed, with an SSH port-forward hint and a paste-the-redirect fallback. `login --print-url` prints one `SUPERMEMORY_AUTHORIZE_URL=<url>` line for the Supermemory CLI and exits 0 once the code is exchanged (or immediately when already signed in).
+- `logout` revokes the refresh token and removes the credentials file; `status` reports OAuth or API key and the signed-in account.
+- API keys keep working unchanged: an `apiKey` in config or `SUPERMEMORY_OPENCLAW_API_KEY` still wins, and custom endpoints keep using keys. `openclaw` is now an optional peer dependency so `npx` does not install it.
+
 ## 2.1.19
 
 - Use official `supermemory@5.0.1` for the hosted API. Existing container tags become namespace paths without changing their values, configuration, credentials, or six-hour document IDs. Repeated saves use POST append/diff, not source replacement. Processing stays `memory` / `dynamic`; an accepted save is not proof that extraction has finished.

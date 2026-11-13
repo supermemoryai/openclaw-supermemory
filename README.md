@@ -15,11 +15,37 @@ openclaw plugins install @supermemory/openclaw-supermemory
 ## Setup
 
 ```bash
+openclaw supermemory login
+openclaw gateway restart
+```
+
+`login` opens your browser to sign in to Supermemory with OAuth, enables the plugin in `~/.openclaw/openclaw.json`, and saves credentials to `~/.supermemory-openclaw/credentials.json` (readable only by you). Access tokens refresh automatically; if the sign-in is revoked or expires, run `login` again.
+
+The same commands also run without OpenClaw on your `PATH`:
+
+```bash
+npx -y @supermemory/openclaw-supermemory login
+npx -y @supermemory/openclaw-supermemory status
+npx -y @supermemory/openclaw-supermemory logout
+```
+
+### Servers and headless machines
+
+When no browser can be opened (SSH sessions, no display), `login` prints the sign-in link instead. Open it on any computer. After consent the browser is sent to `http://127.0.0.1:19883/callback` on the OpenClaw machine, so either:
+
+- forward the port before opening the link: `ssh -L 19883:127.0.0.1:19883 your-server`, or
+- when the page fails to load, copy the full address from the browser's address bar and paste it into the waiting `login` prompt.
+
+`login --print-url` never opens a browser and prints the link as a single `SUPERMEMORY_AUTHORIZE_URL=<url>` line on stdout, for scripts and the Supermemory CLI.
+
+### Use an API key instead
+
+```bash
 openclaw supermemory setup
 openclaw gateway restart
 ```
 
-Enter your API key from [app.supermemory.ai](https://app.supermemory.ai/?view=integrations). That's it.
+Enter your API key from [app.supermemory.ai](https://app.supermemory.ai/?view=integrations), or set `SUPERMEMORY_OPENCLAW_API_KEY`. An API key in the config or environment always takes precedence over the OAuth sign-in, and self-hosted / custom `baseUrl` instances need one.
 
 ### Advanced Setup
 
@@ -68,6 +94,8 @@ hyphenated names.
 ## CLI Commands
 
 ```bash
+openclaw supermemory login              # Sign in with OAuth (--print-url for headless)
+openclaw supermemory logout             # Revoke and remove the OAuth sign-in
 openclaw supermemory setup              # Configure API key
 openclaw supermemory setup-advanced     # Configure all options
 openclaw supermemory status             # View current configuration
@@ -78,7 +106,7 @@ openclaw supermemory wipe               # Delete all memories (requires confirma
 
 ## Configuration
 
-Set API key (and, for self-hosted instances, the base URL) via environment variables:
+Without OAuth, set the API key (and, for self-hosted instances, the base URL) via environment variables:
 
 ```bash
 export SUPERMEMORY_OPENCLAW_API_KEY="sm_..."
@@ -91,7 +119,7 @@ Or configure in `~/.openclaw/openclaw.json`:
 
 | Key                           | Type      | Default               | Description                                               |
 | ----------------------------- | --------- | --------------------- | --------------------------------------------------------- |
-| `apiKey`                      | `string`  | —                       | Supermemory API key.                                      |
+| `apiKey`                      | `string`  | —                       | Supermemory API key. Optional after `login`; takes precedence over OAuth when set. |
 | `baseUrl`                     | `string`  | `https://api.supermemory.ai` | API endpoint. Set to a self-hosted / local URL to point at your own instance; leave blank for the cloud. |
 | `apiVersion`                  | `"v5" \| "legacy"` | Auto-selected | Protocol override. The hosted root URL uses v5; custom endpoints default to legacy. |
 | `containerTag`                | `string`  | `openclaw_{hostname}` | Root memory namespace.                                    |

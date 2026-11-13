@@ -12,7 +12,7 @@ export function registerStubCommands(api: OpenClawPluginApi): void {
 		requireAuth: true,
 		handler: async () => {
 			return {
-				text: "Supermemory not configured. Run 'openclaw supermemory setup' first.",
+				text: "Supermemory not configured. Run 'openclaw supermemory login' first.",
 			}
 		},
 	})
@@ -24,7 +24,7 @@ export function registerStubCommands(api: OpenClawPluginApi): void {
 		requireAuth: true,
 		handler: async () => {
 			return {
-				text: "Supermemory not configured. Run 'openclaw supermemory setup' first.",
+				text: "Supermemory not configured. Run 'openclaw supermemory login' first.",
 			}
 		},
 	})

@@ -1,9 +1,12 @@
 {
 	"name": "@supermemory/openclaw-supermemory",
-	"version": "2.1.19",
+	"version": "2.2.0",
 	"type": "module",
 	"description": "OpenClaw Supermemory memory plugin",
 	"license": "MIT",
+	"bin": {
+		"openclaw-supermemory": "dist/cli.js"
+	},
 	"dependencies": {
 		"supermemory": "5.0.1",
 		"supermemory-legacy": "npm:supermemory@4.15.0",
@@ -15,6 +18,8 @@
 		"openclaw.plugin.json",
 		"index.ts",
 		"client.ts",
+		"auth.ts",
+		"version.ts",
 		"commands",
 		"hooks",
 		"skills",
@@ -30,8 +35,9 @@
 		"dist"
 	],
 	"scripts": {
-		"build": "npm run build:runtime && npm run build:lib",
+		"build": "npm run build:runtime && npm run build:cli && npm run build:lib",
 		"build:runtime": "esbuild index.ts --bundle --format=esm --platform=node --target=es2022 --external:openclaw --external:openclaw/* --external:supermemory --external:supermemory-legacy --outfile=dist/index.js",
+		"build:cli": "esbuild bin.ts --bundle --format=esm --platform=node --target=es2022 --banner:js='#!/usr/bin/env node' --outfile=dist/cli.js",
 		"check-types": "tsc --noEmit",
 		"lint": "bunx @biomejs/biome ci .",
 		"lint:fix": "bunx @biomejs/biome check --write .",
@@ -40,6 +46,11 @@
 	},
 	"peerDependencies": {
 		"openclaw": ">=2026.5.7"
+	},
+	"peerDependenciesMeta": {
+		"openclaw": {
+			"optional": true
+		}
 	},
 	"openclaw": {
 		"extensions": [
