@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.2.0
+
+- Auto-recall and auto-capture no longer call Supermemory for subagent sessions, OpenClaw helper runs (active memory, session-memory helpers, update repair, internal side runs, dreaming), or headless runs (`openclaw agent exec` and scripted `openclaw agent --message` turns without a channel). Interactive TUI, Control UI, and channel turns are unchanged, as are stored data, container tags, document IDs, and metadata.
+- Turns whose input OpenClaw marks as host-generated (for example a subagent's result announced to its parent) still recall but are not captured.
+- Set `captureSubagents: true` or `captureHeadless: true` (or `SUPERMEMORY_CAPTURE_SUBAGENTS=true` / `SUPERMEMORY_CAPTURE_HEADLESS=true`) to restore the previous behaviour for that class. The environment variables win over the config in both directions.
+
 ## 2.1.19
 
 - Use official `supermemory@5.0.1` for the hosted API. Existing container tags become namespace paths without changing their values, configuration, credentials, or six-hour document IDs. Repeated saves use POST append/diff, not source replacement. Processing stays `memory` / `dynamic`; an accepted save is not proof that extraction has finished.

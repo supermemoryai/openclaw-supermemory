@@ -40,6 +40,16 @@ Once installed, the plugin works automatically:
 
 Everything runs in the cloud. Supermemory handles extraction, deduplication, and profile building.
 
+### Subagents, headless runs and helper prompts
+
+By default, auto-recall and auto-capture skip turns that are not a person talking to OpenClaw, so they make no Supermemory API calls:
+
+- **Subagents and helper runs**: sessions OpenClaw spawns on its own, recognised by the part of their session key after `agent:<id>:` (`subagent:…`, `helper:incognito-…`, `update-repair:…`, `internal-session-effects:…`, `dreaming-narrative-…`) or a trailing `:active-memory:<id>`. Session keys you name yourself are never matched.
+- **Host-generated turns**: turns whose input OpenClaw marks as host-generated (`inputProvenance.kind` `inter_session` or `internal_system`, e.g. a subagent announcing its result back to the parent session) still recall, but are not captured.
+- **Headless runs**: `openclaw agent exec` and scripted `openclaw agent --message` turns, which OpenClaw runs without a message channel. Turns from the TUI, Control UI, and chat channels always carry one and are unaffected.
+
+Cron, heartbeat, and memory-flush runs were already skipped and still are. To restore the previous behaviour, set `captureSubagents: true` and/or `captureHeadless: true` in the plugin config, or export `SUPERMEMORY_CAPTURE_SUBAGENTS=true` / `SUPERMEMORY_CAPTURE_HEADLESS=true` in the environment of the OpenClaw process. The environment wins over the config in both directions and accepts `true`/`1`/`yes`/`on` and `false`/`0`/`no`/`off`. Each flag re-enables both recall and capture for its class; a subagent spawned from a headless run needs both. The memory tools (`supermemory-search`, `supermemory-save`, …) still work everywhere when the agent calls them explicitly.
+
 ## Slash Commands
 
 | Command              | Description                                                                                          |
@@ -104,6 +114,8 @@ Or configure in `~/.openclaw/openclaw.json`:
 | `enableCustomContainerTags`   | `boolean` | `false`               | Enable custom container routing.                          |
 | `customContainers`            | `array`   | `[]`                  | Custom containers with `tag` and `description`.           |
 | `customContainerInstructions` | `string`  | `""`                  | Instructions for AI on container routing.                 |
+| `captureSubagents`            | `boolean` | `false`               | Also recall and capture in subagent sessions and OpenClaw helper runs. Env: `SUPERMEMORY_CAPTURE_SUBAGENTS=true`. |
+| `captureHeadless`             | `boolean` | `false`               | Also recall and capture in headless runs (`openclaw agent exec`, scripted `openclaw agent --message`). Env: `SUPERMEMORY_CAPTURE_HEADLESS=true`. |
 
 ### Full Example
 

@@ -2,7 +2,7 @@ import type { ProfileSearchResult, SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 import { stripInboundMetadata } from "../memory.ts"
-import { isInteractiveTrigger } from "./trigger.ts"
+import { isInteractiveTrigger, skippedSessionReason } from "./trigger.ts"
 
 function formatRelativeTime(isoTimestamp: string): string {
 	try {
@@ -182,6 +182,12 @@ export function buildRecallHandler(
 	) => {
 		const trigger = ctx?.trigger as string | undefined
 		if (!isInteractiveTrigger(trigger)) {
+			return
+		}
+
+		const skipped = skippedSessionReason(cfg, ctx)
+		if (skipped) {
+			log.debug(`recall skipped for ${skipped} session ${ctx?.sessionKey}`)
 			return
 		}
 
