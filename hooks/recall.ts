@@ -185,7 +185,7 @@ export function buildRecallHandler(
 			return
 		}
 
-		const skipped = skippedSessionReason(cfg, ctx, ctx?.inputProvenance)
+		const skipped = skippedSessionReason(cfg, ctx)
 		if (skipped) {
 			log.debug(`recall skipped for ${skipped} session ${ctx?.sessionKey}`)
 			return

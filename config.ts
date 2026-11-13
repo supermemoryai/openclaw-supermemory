@@ -72,6 +72,15 @@ function resolveEnvVars(value: string): string {
 
 export const DEFAULT_BASE_URL = "https://api.supermemory.ai"
 
+// true/1/yes/on or false/0/no/off, any case; anything else leaves the config value.
+export function envFlag(name: string): boolean | undefined {
+	const value = process.env[name]?.trim().toLowerCase()
+	if (value === undefined) return undefined
+	if (["true", "1", "yes", "on"].includes(value)) return true
+	if (["false", "0", "no", "off"].includes(value)) return false
+	return undefined
+}
+
 export function resolveApiVersion(raw: unknown, baseUrl: string): ApiVersion {
 	const explicit = raw ?? process.env.SUPERMEMORY_API_VERSION
 	if (explicit !== undefined) {
@@ -196,11 +205,9 @@ export function parseConfig(raw: unknown): SupermemoryConfig {
 				? cfg.customContainerInstructions
 				: "",
 		captureSubagents:
-			cfg.captureSubagents === true ||
-			process.env.SUPERMEMORY_CAPTURE_SUBAGENTS === "true",
+			envFlag("SUPERMEMORY_CAPTURE_SUBAGENTS") ?? cfg.captureSubagents === true,
 		captureHeadless:
-			cfg.captureHeadless === true ||
-			process.env.SUPERMEMORY_CAPTURE_HEADLESS === "true",
+			envFlag("SUPERMEMORY_CAPTURE_HEADLESS") ?? cfg.captureHeadless === true,
 	}
 }
 
