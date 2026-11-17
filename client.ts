@@ -139,6 +139,58 @@ export class SupermemoryClient {
 					this.requestOptions(),
 				)
 
+		return this.accepted("add", result)
+	}
+
+	supportsSessions(): boolean {
+		return !this.legacy
+	}
+
+	async addSession(
+		raw: string,
+		sessionId: string,
+		position: { generation: number; offset: number },
+		metadata?: Record<string, string | number | boolean>,
+		entityContext?: string,
+	): Promise<{ id: string; status: string }> {
+		const mergedMetadata: Record<string, string | number | boolean> = {
+			sm_source: "openclaw",
+			...(metadata ?? {}),
+			sm_session_generation: position.generation,
+			sm_session_offset: position.offset,
+		}
+
+		log.debugRequest("add.session", {
+			contentLength: raw.length,
+			sessionId,
+			metadata: mergedMetadata,
+			containerTag: this.containerTag,
+		})
+
+		const clampedCtx = entityContext
+			? clampEntityContext(entityContext)
+			: undefined
+
+		const result = await this.client.add(
+			this.containerTag,
+			{
+				content: raw,
+				id: sessionId,
+				metadata: mergedMetadata,
+				...(clampedCtx && { supportingContext: clampedCtx }),
+				taskType: "memory",
+				dreaming: "dynamic",
+			},
+			{ ...this.requestOptions(), headers: { "x-sm-session": "openclaw" } },
+		)
+
+		return this.accepted("add.session", result)
+	}
+
+	private accepted(
+		method: string,
+		result: { id?: unknown; status?: unknown },
+	): { id: string; status: string } {
 		if (
 			typeof result.id !== "string" ||
 			!result.id.trim() ||
@@ -160,7 +212,7 @@ export class SupermemoryClient {
 			)
 		}
 
-		log.debugResponse("add", { id: result.id, status: result.status })
+		log.debugResponse(method, { id: result.id, status: result.status })
 
 		return { id: result.id, status: result.status }
 	}
