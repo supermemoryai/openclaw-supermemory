@@ -2,6 +2,7 @@ import type { SupermemoryClient } from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 import { buildDocumentId, stripInboundMetadata } from "../memory.ts"
+import { captureSession } from "./session.ts"
 import { isInteractiveTrigger } from "./trigger.ts"
 
 const SKIPPED_PROVIDERS = ["exec-event", "cron-event", "heartbeat"]
@@ -50,6 +51,22 @@ export function buildCaptureHandler(
 			event.messages.length === 0
 		)
 			return
+
+		const sessionId = ctx.sessionId
+		if (
+			client.supportsSessions() &&
+			typeof sessionId === "string" &&
+			sessionId.trim()
+		) {
+			await captureSession({
+				client,
+				sessionId,
+				messages: event.messages,
+				metadata: { source: "openclaw", timestamp: new Date().toISOString() },
+				entityContext: cfg.entityContext,
+			})
+			return
+		}
 
 		const lastTurn = getLastTurn(event.messages)
 
