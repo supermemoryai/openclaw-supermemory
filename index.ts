@@ -7,7 +7,7 @@ import { SupermemoryClient } from "./client.ts"
 import { registerCli } from "./commands/cli.ts"
 import { registerCommands, registerStubCommands } from "./commands/slash.ts"
 import { parseConfig, supermemoryConfigSchema } from "./config.ts"
-import { buildCaptureHandler } from "./hooks/capture.ts"
+import { buildCaptureHandler, flushPendingCaptures } from "./hooks/capture.ts"
 import { buildRecallHandler } from "./hooks/recall.ts"
 import { checkNpmUpdate, formatUpdateNotice } from "./lib/version-check.ts"
 import { initLogger } from "./logger.ts"
@@ -106,7 +106,8 @@ export default {
 					if (info) api.logger.info(formatUpdateNotice(info))
 				})
 			},
-			stop: () => {
+			stop: async () => {
+				await flushPendingCaptures()
 				api.logger.info("supermemory: stopped")
 			},
 		})
