@@ -5,6 +5,7 @@ import { buildDocumentId, stripInboundMetadata } from "../memory.ts"
 import { isInteractiveTrigger } from "./trigger.ts"
 
 const SKIPPED_PROVIDERS = ["exec-event", "cron-event", "heartbeat"]
+const CAPTURE_TIMEOUT_MS = 10_000
 
 function getLastTurn(messages: unknown[]): unknown[] {
 	let lastUserIdx = -1
@@ -112,16 +113,15 @@ export function buildCaptureHandler(
 			`capturing ${captured.length} texts (${content.length} chars) → ${customId}`,
 		)
 
-		try {
-			await client.addMemory(
+		void client
+			.addMemory(
 				content,
 				{ source: "openclaw", timestamp: new Date().toISOString() },
 				customId,
 				undefined,
 				cfg.entityContext,
+				AbortSignal.timeout(CAPTURE_TIMEOUT_MS),
 			)
-		} catch (err) {
-			log.error("capture failed", err)
-		}
+			.catch((err) => log.error("capture failed", err))
 	}
 }

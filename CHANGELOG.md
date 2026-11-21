@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.2.1
+
+- Auto-recall never holds up a prompt for more than 3 seconds. It makes one attempt with no retries, and on a timeout or any API error the prompt goes ahead without memory. Before, a slow API held every prompt until OpenClaw's 15-second hook limit, and a 500 cost about 3 seconds of retries.
+- `/profile` is fetched only on the turns that show the profile (the first turn and every `profileFrequency` turns). Other turns make a single search request. If the profile request fails, that turn shows search results only and the next profile turn tries again.
+- Memories already shown earlier in a session are not shown again. The plugin keeps a per-session list in memory, capped at 100 sessions and 500 memories per session. It resets when a session starts over or is compacted. When every recalled memory was already shown, nothing is injected.
+- The fixed recall instructions now go into the system prompt through `appendSystemContext`, with the same text on every turn, so the prompt cache holds. Each turn's `<supermemory-context>` block now holds only that turn's new memories, plus the `showMemoryUsage` note when it is enabled.
+- Auto-capture no longer holds up the end of a turn. It runs in the background with a 10-second timeout and no retries, and failures are logged. Tools and CLI commands keep the 60-second timeout and two retries.
+
 ## 2.2.0
 
 - Sign in with Supermemory OAuth: `openclaw supermemory login` (or `npx -y @supermemory/openclaw-supermemory login`) runs an authorization-code + PKCE flow on a 127.0.0.1:19883 loopback callback and enables the plugin in `~/.openclaw/openclaw.json`. Credentials live in `~/.supermemory-openclaw/credentials.json` (0600), refresh before expiry and after a 401, and a rejected refresh token asks you to sign in again.
