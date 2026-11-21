@@ -1,8 +1,21 @@
-import type { ProfileSearchResult, SupermemoryClient } from "../client.ts"
+import type {
+	ProfileSearchResult,
+	SearchResult,
+	SupermemoryClient,
+} from "../client.ts"
 import type { SupermemoryConfig } from "../config.ts"
 import { log } from "../logger.ts"
 import { stripInboundMetadata } from "../memory.ts"
 import { isInteractiveTrigger } from "./trigger.ts"
+
+const RECALL_BUDGET_MS = 3000
+const MAX_SEEN_SESSIONS = 100
+const MAX_SEEN_PER_SESSION = 500
+
+const MEMORY_GUIDANCE =
+	"<supermemory-context> blocks in user messages hold background context about the user from long-term memory. Use this context silently to inform your understanding — only reference it when the user's message is directly related to something in these memories. Memories shown earlier in the conversation still apply. Do not proactively bring up memories. Only use them when the conversation naturally calls for it."
+
+type SeenMemories = { turn: number; ids: Set<string> }
 
 function formatRelativeTime(isoTimestamp: string): string {
 	try {
@@ -111,17 +124,12 @@ function formatContext(
 		)
 	}
 
-	const intro =
-		"The following is background context about the user from long-term memory. Use this context silently to inform your understanding — only reference it when the user's message is directly related to something in these memories."
-	const disclaimer =
-		"Do not proactively bring up memories. Only use them when the conversation naturally calls for it."
-
 	let memoryUsageInstruction = ""
 	if (showMemoryUsage) {
 		memoryUsageInstruction = `\n\nIMPORTANT: At the very beginning of your response, include a brief note indicating how many memories from Supermemory were used to inform your response. Format it as: "[Supermemory: ${totalMemories} memories loaded]" — this helps the user understand that OpenClaw is using their long-term memory. If none of the memories are relevant to the current message, say "[Supermemory: ${totalMemories} memories loaded, 0 used]".`
 	}
 
-	return `<supermemory-context>\n${intro}\n\n${sections.join("\n\n")}\n\n${disclaimer}${memoryUsageInstruction}\n</supermemory-context>`
+	return `<supermemory-context>\n${sections.join("\n\n")}${memoryUsageInstruction}\n</supermemory-context>`
 }
 
 function countUserTurns(messages: unknown[]): number {
@@ -136,6 +144,29 @@ function countUserTurns(messages: unknown[]): number {
 		}
 	}
 	return count
+}
+
+function memoryKey(result: SearchResult): string {
+	return result.id || result.memory || ""
+}
+
+// A new or compacted session (fewer user messages than last time) starts with an empty seen-set.
+function sessionSeenIds(
+	sessions: Map<string, SeenMemories>,
+	key: string,
+	turn: number,
+): Set<string> {
+	let state = sessions.get(key)
+	sessions.delete(key)
+	if (!state || turn === 0 || turn < state.turn) {
+		state = { turn, ids: new Set() }
+	}
+	state.turn = turn
+	sessions.set(key, state)
+	if (sessions.size > MAX_SEEN_SESSIONS) {
+		sessions.delete(sessions.keys().next().value as string)
+	}
+	return state.ids
 }
 
 function formatContainerMetadata(
@@ -172,14 +203,18 @@ function formatContainerMetadata(
 	return lines.join("\n")
 }
 
+// Guidance is returned on every path, even on errors, so the system prompt stays byte-identical across turns.
 export function buildRecallHandler(
 	client: SupermemoryClient,
 	cfg: SupermemoryConfig,
 ) {
-	return async (
+	const seenBySession = new Map<string, SeenMemories>()
+
+	const recall = async (
 		event: Record<string, unknown>,
-		ctx?: Record<string, unknown>,
-	) => {
+		ctx: Record<string, unknown> | undefined,
+		signal: AbortSignal,
+	): Promise<string | undefined> => {
 		const trigger = ctx?.trigger as string | undefined
 		if (!isInteractiveTrigger(trigger)) {
 			return
@@ -194,44 +229,92 @@ export function buildRecallHandler(
 		const includeProfile = isNewSession || turn % cfg.profileFrequency === 0
 		const messageProvider = ctx?.messageProvider as string | undefined
 		const query = isNewSession ? undefined : stripInboundMetadata(rawPrompt)
+		const sessionKey = (ctx?.sessionId ?? ctx?.sessionKey) as string | undefined
 
 		log.debug(
 			`recalling for turn ${turn} (profile: ${includeProfile}, newSession: ${isNewSession})`,
 		)
 
-		try {
-			const profile = await client.getProfile(query)
-			const memoryContext = formatContext(
-				includeProfile ? profile.static : [],
-				includeProfile ? profile.dynamic : [],
-				profile.searchResults,
-				cfg.maxRecallResults,
-				cfg.showMemoryUsage,
-			)
+		const [profile, search] = await Promise.allSettled([
+			includeProfile
+				? client.getProfile(undefined, undefined, signal)
+				: Promise.resolve(undefined),
+			query ? client.search(query, 10, undefined, signal) : Promise.resolve([]),
+		])
+		if (signal.aborted) return
+		if (profile.status === "rejected") {
+			log.error("profile recall failed", profile.reason)
+		}
+		if (search.status === "rejected") {
+			log.error("recall failed", search.reason)
+		}
 
-			const containerContext = formatContainerMetadata(cfg, messageProvider)
+		const seen = sessionKey
+			? sessionSeenIds(seenBySession, sessionKey, turn)
+			: undefined
+		const fresh = (search.status === "fulfilled" ? search.value : [])
+			.filter((r) => !seen?.has(memoryKey(r)))
+			.slice(0, cfg.maxRecallResults)
+		const profileData =
+			profile.status === "fulfilled" ? profile.value : undefined
 
-			const contextParts: string[] = []
-			if (memoryContext) contextParts.push(memoryContext)
-			if (containerContext) {
-				contextParts.push(
-					`<supermemory-containers>\n${containerContext}\n</supermemory-containers>`,
-				)
+		const memoryContext = formatContext(
+			profileData?.static ?? [],
+			profileData?.dynamic ?? [],
+			fresh,
+			cfg.maxRecallResults,
+			cfg.showMemoryUsage,
+		)
+		if (memoryContext && seen) {
+			for (const r of fresh) {
+				seen.add(memoryKey(r))
+				if (seen.size > MAX_SEEN_PER_SESSION) {
+					seen.delete(seen.values().next().value as string)
+				}
 			}
+		}
 
-			if (contextParts.length === 0) {
-				log.debug("no profile data to inject")
-				return
-			}
+		const containerContext = formatContainerMetadata(cfg, messageProvider)
 
-			const finalContext = contextParts.join("\n\n")
-			log.debug(
-				`injecting context (${finalContext.length} chars, turn ${turn})`,
+		const contextParts: string[] = []
+		if (memoryContext) contextParts.push(memoryContext)
+		if (containerContext) {
+			contextParts.push(
+				`<supermemory-containers>\n${containerContext}\n</supermemory-containers>`,
 			)
-			return { prependContext: finalContext }
-		} catch (err) {
-			log.error("recall failed", err)
+		}
+
+		if (contextParts.length === 0) {
+			log.debug("no new memories to inject")
 			return
 		}
+
+		const finalContext = contextParts.join("\n\n")
+		log.debug(`injecting context (${finalContext.length} chars, turn ${turn})`)
+		return finalContext
+	}
+
+	return async (
+		event: Record<string, unknown>,
+		ctx?: Record<string, unknown>,
+	) => {
+		const signal = AbortSignal.timeout(RECALL_BUDGET_MS)
+		const deadline = new Promise<undefined>((resolve) =>
+			signal.addEventListener("abort", () => resolve(undefined), {
+				once: true,
+			}),
+		)
+		const prependContext = await Promise.race([
+			recall(event, ctx, signal).catch((err) => {
+				log.error("recall failed", err)
+				return undefined
+			}),
+			deadline,
+		])
+		if (signal.aborted)
+			log.warn("recall skipped: Supermemory did not answer in time")
+		return prependContext
+			? { prependContext, appendSystemContext: MEMORY_GUIDANCE }
+			: { appendSystemContext: MEMORY_GUIDANCE }
 	}
 }

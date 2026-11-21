@@ -88,8 +88,14 @@ export class SupermemoryClient {
 		)
 	}
 
-	private requestOptions(): RequestOptions {
-		return { timeoutInSeconds: 60, maxRetries: 2 }
+	private requestOptions(signal?: AbortSignal): RequestOptions {
+		return signal
+			? { maxRetries: 0, abortSignal: signal }
+			: { timeoutInSeconds: 60, maxRetries: 2 }
+	}
+
+	private legacyRequestOptions(signal?: AbortSignal) {
+		return signal ? { maxRetries: 0, signal } : undefined
 	}
 
 	async addMemory(
@@ -98,6 +104,7 @@ export class SupermemoryClient {
 		customId?: string,
 		containerTag?: string,
 		entityContext?: string,
+		signal?: AbortSignal,
 	): Promise<{ id: string; status: string }> {
 		const cleaned = sanitizeContent(content)
 		const tag = containerTag ?? this.containerTag
@@ -119,13 +126,16 @@ export class SupermemoryClient {
 			: undefined
 
 		const result = this.legacy
-			? await this.legacy.add({
-					content: cleaned,
-					containerTag: tag,
-					metadata: mergedMetadata,
-					...(customId && { customId }),
-					...(clampedCtx && { entityContext: clampedCtx }),
-				})
+			? await this.legacy.add(
+					{
+						content: cleaned,
+						containerTag: tag,
+						metadata: mergedMetadata,
+						...(customId && { customId }),
+						...(clampedCtx && { entityContext: clampedCtx }),
+					},
+					this.legacyRequestOptions(signal),
+				)
 			: await this.client.add(
 					tag,
 					{
@@ -136,7 +146,7 @@ export class SupermemoryClient {
 						taskType: "memory",
 						dreaming: "dynamic",
 					},
-					this.requestOptions(),
+					this.requestOptions(signal),
 				)
 
 		if (
@@ -169,6 +179,7 @@ export class SupermemoryClient {
 		query: string,
 		limit = 5,
 		containerTag?: string,
+		signal?: AbortSignal,
 	): Promise<SearchResult[]> {
 		const tag = containerTag ?? this.containerTag
 
@@ -179,11 +190,14 @@ export class SupermemoryClient {
 		})
 
 		const response = this.legacy
-			? await this.legacy.search.memories({
-					q: query,
-					containerTag: tag,
-					limit,
-				})
+			? await this.legacy.search.memories(
+					{
+						q: query,
+						containerTag: tag,
+						limit,
+					},
+					this.legacyRequestOptions(signal),
+				)
 			: await this.client.search(
 					tag,
 					{
@@ -194,7 +208,7 @@ export class SupermemoryClient {
 						rerank: "none",
 						rewriteQuery: false,
 					},
-					this.requestOptions(),
+					this.requestOptions(signal),
 				)
 
 		const results: SearchResult[] = (response.results ?? []).map((r) => {
@@ -216,6 +230,7 @@ export class SupermemoryClient {
 	async getProfile(
 		query?: string,
 		containerTag?: string,
+		signal?: AbortSignal,
 	): Promise<ProfileResult> {
 		const tag = containerTag ?? this.containerTag
 
@@ -223,10 +238,13 @@ export class SupermemoryClient {
 
 		let result: ProfileResult
 		if (this.legacy) {
-			const response = await this.legacy.profile({
-				containerTag: tag,
-				...(query && { q: query }),
-			})
+			const response = await this.legacy.profile(
+				{
+					containerTag: tag,
+					...(query && { q: query }),
+				},
+				this.legacyRequestOptions(signal),
+			)
 			result = {
 				static: response.profile?.static ?? [],
 				dynamic: response.profile?.dynamic ?? [],
@@ -235,8 +253,8 @@ export class SupermemoryClient {
 			}
 		} else {
 			const [response, searchResults] = await Promise.all([
-				this.client.profile(tag, {}, this.requestOptions()),
-				query ? this.search(query, 10, tag) : Promise.resolve([]),
+				this.client.profile(tag, {}, this.requestOptions(signal)),
+				query ? this.search(query, 10, tag, signal) : Promise.resolve([]),
 			])
 			result = {
 				static: (response.profile?.static ?? []).map((fact) => fact.memory),

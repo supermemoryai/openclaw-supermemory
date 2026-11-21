@@ -5,6 +5,8 @@ import { buildDocumentId, stripInboundMetadata } from "../memory.ts"
 import { isInteractiveTrigger } from "./trigger.ts"
 
 const SKIPPED_PROVIDERS = ["exec-event", "cron-event", "heartbeat"]
+const CAPTURE_TIMEOUT_MS = 10_000
+const pendingCaptures = new Set<Promise<void>>()
 
 function getLastTurn(messages: unknown[]): unknown[] {
 	let lastUserIdx = -1
@@ -22,6 +24,12 @@ function getLastTurn(messages: unknown[]): unknown[] {
 	return lastUserIdx >= 0 ? messages.slice(lastUserIdx) : messages
 }
 
+// Lets the service stop() finish captures the host fired without awaiting before the gateway exits.
+export async function flushPendingCaptures(): Promise<void> {
+	await Promise.allSettled([...pendingCaptures])
+}
+
+// Returning the capture lets local one-shot runs await it before exit; channel runs fire agent_end without waiting.
 export function buildCaptureHandler(
 	client: SupermemoryClient,
 	cfg: SupermemoryConfig,
@@ -112,16 +120,21 @@ export function buildCaptureHandler(
 			`capturing ${captured.length} texts (${content.length} chars) → ${customId}`,
 		)
 
-		try {
-			await client.addMemory(
+		const capture = client
+			.addMemory(
 				content,
 				{ source: "openclaw", timestamp: new Date().toISOString() },
 				customId,
 				undefined,
 				cfg.entityContext,
+				AbortSignal.timeout(CAPTURE_TIMEOUT_MS),
 			)
-		} catch (err) {
-			log.error("capture failed", err)
-		}
+			.then(
+				() => undefined,
+				(err) => log.error("capture failed", err),
+			)
+			.finally(() => pendingCaptures.delete(capture))
+		pendingCaptures.add(capture)
+		await capture
 	}
 }
