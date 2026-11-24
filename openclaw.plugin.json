@@ -25,7 +25,7 @@
 			"label": "Supermemory API Key",
 			"sensitive": true,
 			"placeholder": "sm_...",
-			"help": "Your API key from app.supermemory.ai (or use ${SUPERMEMORY_OPENCLAW_API_KEY})"
+			"help": "Optional: leave empty after 'openclaw supermemory login'. Your API key from app.supermemory.ai (or use ${SUPERMEMORY_OPENCLAW_API_KEY}); takes precedence over OAuth"
 		},
 		"baseUrl": {
 			"label": "Base URL",

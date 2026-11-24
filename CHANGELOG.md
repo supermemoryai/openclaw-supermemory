@@ -1,10 +1,17 @@
 # Changelog
 
-## 2.2.0
+## 2.3.0
 
 - Auto-recall and auto-capture no longer call Supermemory for subagent sessions, OpenClaw helper runs (active memory, session-memory helpers, update repair, internal side runs, dreaming), or headless runs (`openclaw agent exec` and scripted `openclaw agent --message` turns without a channel). Interactive TUI, Control UI, and channel turns are unchanged, as are stored data, container tags, document IDs, and metadata.
 - Turns whose input OpenClaw marks as host-generated (for example a subagent's result announced to its parent) still recall but are not captured.
 - Set `captureSubagents: true` or `captureHeadless: true` (or `SUPERMEMORY_CAPTURE_SUBAGENTS=true` / `SUPERMEMORY_CAPTURE_HEADLESS=true`) to restore the previous behaviour for that class. The environment variables win over the config in both directions.
+
+## 2.2.0
+
+- Sign in with Supermemory OAuth: `openclaw supermemory login` (or `npx -y @supermemory/openclaw-supermemory login`) runs an authorization-code + PKCE flow on a 127.0.0.1:19883 loopback callback and enables the plugin in `~/.openclaw/openclaw.json`. Credentials live in `~/.supermemory-openclaw/credentials.json` (0600), refresh before expiry and after a 401, and a rejected refresh token asks you to sign in again.
+- Headless machines get the sign-in link printed, with an SSH port-forward hint and a paste-the-redirect fallback. `login --print-url` prints one `SUPERMEMORY_AUTHORIZE_URL=<url>` line for the Supermemory CLI and exits 0 once the code is exchanged (or immediately when already signed in).
+- `logout` revokes the refresh token and removes the credentials file; `status` reports OAuth or API key and the signed-in account.
+- API keys keep working unchanged: an `apiKey` in config or `SUPERMEMORY_OPENCLAW_API_KEY` still wins, and custom endpoints keep using keys. `openclaw` is now an optional peer dependency so `npx` does not install it.
 
 ## 2.1.19
 
