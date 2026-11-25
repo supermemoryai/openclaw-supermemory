@@ -17,6 +17,20 @@ const MEMORY_GUIDANCE =
 
 type SeenMemories = { turn: number; ids: Set<string> }
 
+const OUT_OF_CREDITS_CONTEXT = `<supermemory-status>
+Supermemory recall is paused because the account is out of credits. Begin your reply with exactly this line, then answer normally: "[Supermemory: out of credits, recall paused. Top up at https://console.supermemory.ai/billing]"
+</supermemory-status>`
+
+// At $0 credits the API refuses recall with 402; OpenClaw hooks have no user notice channel, so the model relays it.
+function isOutOfCredits(result: PromiseSettledResult<unknown>): boolean {
+	if (result.status !== "rejected") return false
+	const error = result.reason as {
+		status?: unknown
+		statusCode?: unknown
+	} | null
+	return (error?.status ?? error?.statusCode) === 402
+}
+
 function formatRelativeTime(isoTimestamp: string): string {
 	try {
 		const dt = new Date(isoTimestamp)
@@ -209,6 +223,7 @@ export function buildRecallHandler(
 	cfg: SupermemoryConfig,
 ) {
 	const seenBySession = new Map<string, SeenMemories>()
+	const creditNoticeSessions = new Set<string>()
 
 	const recall = async (
 		event: Record<string, unknown>,
@@ -277,6 +292,13 @@ export function buildRecallHandler(
 		const containerContext = formatContainerMetadata(cfg, messageProvider)
 
 		const contextParts: string[] = []
+		if (
+			(isOutOfCredits(profile) || isOutOfCredits(search)) &&
+			!creditNoticeSessions.has(sessionKey ?? "")
+		) {
+			creditNoticeSessions.add(sessionKey ?? "")
+			contextParts.push(OUT_OF_CREDITS_CONTEXT)
+		}
 		if (memoryContext) contextParts.push(memoryContext)
 		if (containerContext) {
 			contextParts.push(
