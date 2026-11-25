@@ -39,7 +39,7 @@
 		"build:runtime": "esbuild index.ts --bundle --format=esm --platform=node --target=es2022 --external:openclaw --external:openclaw/* --external:supermemory --external:supermemory-legacy --outfile=dist/index.js",
 		"build:cli": "esbuild bin.ts --bundle --format=esm --platform=node --target=es2022 --banner:js='#!/usr/bin/env node' --outfile=dist/cli.js",
 		"check-types": "tsc --noEmit",
-		"lint": "bunx @biomejs/biome ci .",
+		"lint": "bunx @biomejs/biome@2.3.8 ci .",
 		"lint:fix": "bunx @biomejs/biome check --write .",
 		"build:lib": "node -e \"const fs=require('node:fs'); fs.accessSync('lib/validate.js'); fs.accessSync('lib/validate.d.ts')\"",
 		"prepack": "npm run build"
